@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://neutra.github.io/"/>
-  <updated>2016-08-31T09:18:55.760Z</updated>
+  <updated>2016-08-31T10:23:26.090Z</updated>
   <id>http://neutra.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://neutra.github.io/2016/TextView%E6%96%87%E5%AD%97%E5%AE%9E%E9%99%85%E9%AB%98%E5%BA%A6%E5%88%86%E6%9E%90/"/>
     <id>http://neutra.github.io/2016/TextView文字实际高度分析/</id>
     <published>2016-08-30T16:00:00.000Z</published>
-    <updated>2016-08-31T09:18:55.760Z</updated>
+    <updated>2016-08-31T10:23:26.090Z</updated>
     
     <content type="html"><![CDATA[<h2 id="问题"><a href="/2016/TextView文字实际高度分析/#问题" class="headerlink" title="问题"></a>问题</h2><p>做Android开发的人都知道怎么设置文字高度：</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">TextView</span></span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"wrap_content"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">    <span class="attr">android:includeFontPadding</span>=<span class="string">"false"</span></div><div class="line">    <span class="attr">android:textSize</span>=<span class="string">"20sp"</span></div><div class="line">    <span class="attr">android:text</span>=<span class="string">"Abc"</span> /&gt;</div></pre></td></tr></table></figure>
@@ -38,8 +38,30 @@
 <h3 id="2-WRAP-CONTENT-的TextView的真实高度-与-textSize-是否成正比例？"><a href="/2016/TextView文字实际高度分析/#2-WRAP-CONTENT-的TextView的真实高度-与-textSize-是否成正比例？" class="headerlink" title="2. WRAP_CONTENT 的TextView的真实高度 与 textSize 是否成正比例？"></a>2. WRAP_CONTENT 的TextView的真实高度 与 textSize 是否成正比例？</h3><blockquote>
 <p><strong> YES </strong> 无论是否includePadding，无论是否多行</p>
 </blockquote>
-<h3 id="3-根据-textSize-如何确定单行-WRAP-CONTENT-的TextView的真实高度"><a href="/2016/TextView文字实际高度分析/#3-根据-textSize-如何确定单行-WRAP-CONTENT-的TextView的真实高度" class="headerlink" title="3. 根据 textSize 如何确定单行 WRAP_CONTENT 的TextView的真实高度"></a>3. 根据 textSize 如何确定单行 WRAP_CONTENT 的TextView的真实高度</h3><p>以使用字体的某个高度（如a-z)的高度作为基准，换算出相应的ascent/descent，再根据是否includePadding补充上下空白</p>
-<h3 id="4-includePadding的实际效果"><a href="/2016/TextView文字实际高度分析/#4-includePadding的实际效果" class="headerlink" title="4. includePadding的实际效果?"></a>4. includePadding的实际效果?</h3><p>includePadding对应高度与top/bottom/ascent/descent有关，只影响第一行和最后一行</p>
+<h3 id="3-根据-textSize-如何确定单行-WRAP-CONTENT-的TextView的真实高度？"><a href="/2016/TextView文字实际高度分析/#3-根据-textSize-如何确定单行-WRAP-CONTENT-的TextView的真实高度？" class="headerlink" title="3. 根据 textSize 如何确定单行 WRAP_CONTENT 的TextView的真实高度？"></a>3. 根据 textSize 如何确定单行 WRAP_CONTENT 的TextView的真实高度？</h3><p>相关参数包括：</p>
+<ol>
+<li><p>所使用字体(fallback的话不影响)的UPM(Units Per EM)</p>
+</li>
+<li><p>ascent/descent属性</p>
+</li>
+<li><p>top/bottom参数</p>
+</li>
+</ol>
+<ul>
+<li><p>禁止includePadding时, TextView<strong>实际占据高度</strong>是 (ascent - descent) / UPM * textSize</p>
+</li>
+<li><p>开启includePadding时, TextView<strong>实际占据高度</strong>是 (top - bottom) / UPM * textSize</p>
+</li>
+</ul>
+<h3 id="4-includePadding的实际效果"><a href="/2016/TextView文字实际高度分析/#4-includePadding的实际效果" class="headerlink" title="4. includePadding的实际效果?"></a>4. includePadding的实际效果?</h3><p>由于top/bottom对应于字体文件的所有图案的ymax和ymin，所以可以推出下面的结论：</p>
+<blockquote>
+<p>如果设置了includePadding，则<strong>所设置字体</strong>里，<strong>最上和最下的图案能刚好容纳得下</strong>。</p>
+</blockquote>
+<p>但是，如果发生了fallback，例如设置了英文字体（默认情况），但是出现了中文字符，绘制中文时通过fallback机制用了另一个字体文件的图案，那么，TextView的高度与另一个字体文件无关</p>
+<blockquote>
+<p>所以，如果不指定字体文件（各种ROM的字体不一定一样），includePadding无法保证</p>
+</blockquote>
+<p>includePadding上下空白的高度与top/bottom/ascent/descent有关，只影响第一行和最后一行</p>
 <p>以下值基于fm = getPaint().fontMetrics</p>
 <blockquote>
 <p>———— TopPadding    = includePadding ? fm.top : fm.ascent<br>———— Ascent        = fm.ascent<br>– Line1  – Baseline      = 0<br>———— Descent       = fm.descent<br>———— Ascent        = fm.ascent<br>– Line2  – Baseline      = 0<br>———— Descent       = fm.descent<br>———— Ascent        = fm.ascent<br>– Line3  – Baseline      = 0<br>———— Descent       = fm.descent<br>———— BottomPadding = includePadding ? fm.bottom : fm.descent</p>
