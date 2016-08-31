@@ -1,0 +1,872 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>f•ﻌ•l</title>
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://neutra.github.io/"/>
+  <updated>2016-08-31T08:44:25.301Z</updated>
+  <id>http://neutra.github.io/</id>
+  
+  <author>
+    <name>neutra</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>TextView文字实际高度分析</title>
+    <link href="http://neutra.github.io/2016/TextView%E6%96%87%E5%AD%97%E5%AE%9E%E9%99%85%E9%AB%98%E5%BA%A6%E5%88%86%E6%9E%90/"/>
+    <id>http://neutra.github.io/2016/TextView文字实际高度分析/</id>
+    <published>2016-08-30T16:00:00.000Z</published>
+    <updated>2016-08-31T08:44:25.301Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="问题"><a href="/2016/TextView文字实际高度分析/#问题" class="headerlink" title="问题"></a>问题</h2><p>做Android开发的人都知道怎么设置文字高度：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">TextView</span></span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"wrap_content"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">    <span class="attr">android:includeFontPadding</span>=<span class="string">"false"</span></div><div class="line">    <span class="attr">android:textSize</span>=<span class="string">"20sp"</span></div><div class="line">    <span class="attr">android:text</span>=<span class="string">"Abc"</span> /&gt;</div></pre></td></tr></table></figure>
+<p>可是有多少人注意到，在手机上这个TextView的实际高度是并不是20sp，那实际高度是多少？</p>
+<p>换句话说，<strong>如何使TextView文字的尺寸位置与设计稿精确一致？</strong></p>
+<a id="more"></a>
+<h2 id="分析"><a href="/2016/TextView文字实际高度分析/#分析" class="headerlink" title="分析"></a>分析</h2><p>因手上只有魅蓝Note3(Flyme系统，基于Android 5.1，1090x1920, density=3)，以下分析和结论均在此机子上测试，其他版本的原理都是一样的，区别在于字体文件和配置可能不一样。</p>
+<p><img src="/2016/TextView文字实际高度分析/ttf-metrics.png" alt=""></p>
+<p>(待续)</p>
+<p>分析的过程就是各种查资料各种尝试，很多人其实只需要知道结论就行了，所以先把结论贴出来：</p>
+<h2 id="结论"><a href="/2016/TextView文字实际高度分析/#结论" class="headerlink" title="结论"></a>结论</h2><h3 id="1-中文和英文放在同一个TextView会导致高度改变吗？"><a href="/2016/TextView文字实际高度分析/#1-中文和英文放在同一个TextView会导致高度改变吗？" class="headerlink" title="1. 中文和英文放在同一个TextView会导致高度改变吗？"></a>1. 中文和英文放在同一个TextView会导致高度改变吗？</h3><blockquote>
+<p><strong> NO </strong></p>
+</blockquote>
+<p>density=3屏幕下，”夔Madpx”/“s夔Madpx”/“Madpx”对应尺寸50sp/50dp/150px高度都是202px(includePadding)/176px</p>
+<h3 id="2-WRAP-CONTENT-的TextView的真实高度-与-textSize-是否成正比例？"><a href="/2016/TextView文字实际高度分析/#2-WRAP-CONTENT-的TextView的真实高度-与-textSize-是否成正比例？" class="headerlink" title="2. WRAP_CONTENT 的TextView的真实高度 与 textSize 是否成正比例？"></a>2. WRAP_CONTENT 的TextView的真实高度 与 textSize 是否成正比例？</h3><blockquote>
+<p><strong> YES </strong></p>
+</blockquote>
+<p>无论是否includePadding，无论是否多行</p>
+<h3 id="3-根据-textSize-如何确定单行-WRAP-CONTENT-的TextView的真实高度"><a href="/2016/TextView文字实际高度分析/#3-根据-textSize-如何确定单行-WRAP-CONTENT-的TextView的真实高度" class="headerlink" title="3. 根据 textSize 如何确定单行 WRAP_CONTENT 的TextView的真实高度"></a>3. 根据 textSize 如何确定单行 WRAP_CONTENT 的TextView的真实高度</h3><p>以使用字体的某个高度（如a-z)的高度作为基准，换算出相应的ascent/descent，再根据是否includePadding补充上下空白</p>
+<h3 id="4-includePadding的实际效果"><a href="/2016/TextView文字实际高度分析/#4-includePadding的实际效果" class="headerlink" title="4. includePadding的实际效果?"></a>4. includePadding的实际效果?</h3><p>includePadding对应高度与top/bottom/ascent/descent有关，只影响第一行和最后一行</p>
+<p>以下值基于getPaint().fontMetrics</p>
+<blockquote>
+<p>———— TopPadding    = if includePadding then .top else .ascent<br>———— Ascent        = .ascent<br>– Line1  – Baseline      = 0<br>———— Ascent        = .descent<br>———— Ascent        = .ascent<br>– Line2  – Baseline      = 0<br>———— Ascent        = .descent<br>———— Ascent        = .ascent<br>– Line3  – Baseline      = 0<br>———— Ascent        = .descent<br>———— BottomPadding = if includePadding then .bottom else .descent<br>top = font.props.ymax, bottom = font.props.ymin</p>
+</blockquote>
+<h3 id="5-android中使用的是mac-hhea-的ascender-descender，还是OS-2的winAscent-winDscent，还是TypoAscender-TypoDescender"><a href="/2016/TextView文字实际高度分析/#5-android中使用的是mac-hhea-的ascender-descender，还是OS-2的winAscent-winDscent，还是TypoAscender-TypoDescender" class="headerlink" title="5. android中使用的是mac(hhea)的ascender/descender，还是OS/2的winAscent/winDscent，还是TypoAscender/TypoDescender?"></a>5. android中使用的是mac(hhea)的ascender/descender，还是OS/2的winAscent/winDscent，还是TypoAscender/TypoDescender?</h3><p>从下面实验可以确定android使用的是mac(hhea)对应的ascender/descender</p>
+<ul>
+<li>ascender/descender和winAscent/winDscent一致 字体DroidSansFallback-flyme-stub.ttf</li>
+</ul>
+<blockquote>
+<p>08-23 16:54:53.811 18380-18380/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView3: space=172.851562 top=-121.875000, ascender=-121.875000, descender=18.164062, bottom=18.164062</p>
+</blockquote>
+<ul>
+<li>把ascender/descender修改后的字体DroidSansFallback-flyme-stub-mod-mac.ttf</li>
+</ul>
+<blockquote>
+<p>08-23 16:54:53.812 18380-18380/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView4: space=208.593750 top=-121.875000, ascender=-146.484375, descender=29.296875, bottom=18.164062</p>
+</blockquote>
+<ul>
+<li>把winAscent/winDscent修改后的字体DroidSansFallback-flyme-stub-mod-win.ttf</li>
+</ul>
+<blockquote>
+<p>08-23 16:54:53.812 18380-18380/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView5: space=172.851562 top=-121.875000, ascender=-121.875000, descender=18.164062, bottom=18.164062</p>
+</blockquote>
+<ul>
+<li>把typoAscender/typoDscender修改后的字体DroidSansFallback-flyme-stub-mod-typo.ttf</li>
+</ul>
+<blockquote>
+<p>08-23 17:16:17.150 32053-32053/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView6: space=172.851562 top=-121.875000, ascender=-121.875000, descender=18.164062, bottom=18.164062</p>
+</blockquote>
+<h3 id="6-TextView默认字体是哪个"><a href="/2016/TextView文字实际高度分析/#6-TextView默认字体是哪个" class="headerlink" title="6. TextView默认字体是哪个?"></a>6. TextView默认字体是哪个?</h3><p>Flyme5.1环境下，没有DroidSansFallback.ttf，不是DroidSansFallback-flyme.ttf，默认尺寸与设置了android:typeface=”sans”一致<br>从源代码TypefaceImpl.cpp，可以确认安卓5.1的默认字体是写死在代码里的，位置在/system/fonts/Roboto-Regular.ttf，与system_fonts.xml没什么关系，如果该文件加载异常，则默认字体是一个包含空列表List<font>的FontFamily，会造成什么危害未知<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> *fns[] = &#123;</div><div class="line">    <span class="string">"/system/fonts/Roboto-Regular.ttf"</span>,</div><div class="line">&#125;;</div></pre></td></tr></table></figure></font></p>
+<p>在Flyme5.1环境下，可以确认Roboto-Regular.ttf的fm与默认的fm一致</p>
+<ul>
+<li><p>默认<br>08-23 18:03:39.158 29517-29517/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView1: space=175.781250 top=-159.228516, ascender=-139.160156, descender=36.621094, bottom=41.455078</p>
+</li>
+<li><p>指定Roboto-Regular.ttf字体<br>08-23 18:03:39.161 29517-29517/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView9: space=175.781250 top=-159.228516, ascender=-139.160156, descender=36.621094, bottom=41.455078</p>
+</li>
+</ul>
+<p>估计安卓系统的默认字体会考虑各种字体Fallback情况下，使用默认字体的上下留白依然不会造成截断情况，所以默认字体的上下留白会显得很宽</p>
+<h3 id="7-android的TextView如何渲染文本"><a href="/2016/TextView文字实际高度分析/#7-android的TextView如何渲染文本" class="headerlink" title="7. android的TextView如何渲染文本?"></a>7. android的TextView如何渲染文本?</h3><ol>
+<li>通过Paint的getFontMetrics获取字体尺寸参数，主要逻辑在Paint.cpp和Skia库的SkPaint.cpp；对文本测量，确定分行处和补充</li>
+<li>对文本测量，确定分行处和补充…的位置，创建StaticLayout/DynamicLayout/BoringLayout</li>
+<li>Layout通过Canvas.drawText进行渲染</li>
+</ol>
+<h3 id="8-如果发生Fallback，逻辑怎样"><a href="/2016/TextView文字实际高度分析/#8-如果发生Fallback，逻辑怎样" class="headerlink" title="8. 如果发生Fallback，逻辑怎样?"></a>8. 如果发生Fallback，逻辑怎样?</h3><ul>
+<li>如果当前的字体文件找不到相应的图案，就会根据fonts.xml/fallback_fonts.xml的配置逐个检查直到找到为止(实现代码可能在Typeface/FontLoader)</li>
+<li>如果找到新字体能提供该图案，则根据UPM和TextSize和Baseline确定绘制的位置和尺寸，但不影响TextView的测量高度</li>
+</ul>
+<h3 id="9-如何使TextView的高度“恰好”（几乎）为中文或英文的高度？"><a href="/2016/TextView文字实际高度分析/#9-如何使TextView的高度“恰好”（几乎）为中文或英文的高度？" class="headerlink" title="9. 如何使TextView的高度“恰好”（几乎）为中文或英文的高度？"></a>9. 如何使TextView的高度“恰好”（几乎）为中文或英文的高度？</h3><ol>
+<li><p>可以自定义只包含极少图案的字体，并设置合适的ascender/descender，如上面的DroidSansFallback-flyme-stub-mod-mac.ttf可以做到50dp的字体恰好WRAP_CONTENT的高度也是50dp<br>但这样就要针对特定版本（4.4/5.0/6.0)嵌入不同的字体，并且AOSP/Flyme等各个ROM的默认字体可能不一样</p>
+</li>
+<li><p>待续</p>
+</li>
+</ol>
+<h3 id="10-如何获取textView的fm和文字高度-space-？"><a href="/2016/TextView文字实际高度分析/#10-如何获取textView的fm和文字高度-space-？" class="headerlink" title="10. 如何获取textView的fm和文字高度(space)？"></a>10. 如何获取textView的fm和文字高度(space)？</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">TextPaint paint = textView.getPaint();</div><div class="line">Paint.FontMetrics fm = <span class="keyword">new</span> Paint.FontMetrics();</div><div class="line"><span class="keyword">float</span> space = paint.getFontMetrics(fm);</div></pre></td></tr></table></figure>
+<h3 id="11-SourceHanSansCN-Normal-ttf和NotoSansHans-Regular-otf区别是？"><a href="/2016/TextView文字实际高度分析/#11-SourceHanSansCN-Normal-ttf和NotoSansHans-Regular-otf区别是？" class="headerlink" title="11. SourceHanSansCN-Normal.ttf和NotoSansHans-Regular.otf区别是？"></a>11. SourceHanSansCN-Normal.ttf和NotoSansHans-Regular.otf区别是？</h3><p>从主要属性上来看，几乎没区别(数字差小于1%)，前者字重是Light后者是Normal，但fonts设置的字重两者都是400。</p>
+<p>前者有30888个图案，后者…</p>
+<h3 id="12-假定思源字体fontSize-100-，在不设置typeface-fontfamily的情况下，用的是什么字体？"><a href="/2016/TextView文字实际高度分析/#12-假定思源字体fontSize-100-，在不设置typeface-fontfamily的情况下，用的是什么字体？" class="headerlink" title="12. 假定思源字体fontSize = 100%，在不设置typeface/fontfamily的情况下，用的是什么字体？"></a>12. 假定思源字体fontSize = 100%，在不设置typeface/fontfamily的情况下，用的是什么字体？</h3><p>英文使用Roboto-Regular.ttf绘制，中文会fallback到SourceHanSansCN-Normal.ttf-&gt;NotoSansHans-Regular.otf-&gt;DroidSansFallback(每个ROM可能不一样)</p>
+<h4 id="12-1-单行文字实际占用高度多少"><a href="/2016/TextView文字实际高度分析/#12-1-单行文字实际占用高度多少" class="headerlink" title="12.1 单行文字实际占用高度多少?"></a>12.1 单行文字实际占用高度多少?</h4><p>文字占用高度只跟默认字体有关，UPM=2048</p>
+<ul>
+<li><p>禁止includePadding时, 实际占用高度为(1900 - -500)/2048 = 117.2%</p>
+</li>
+<li><p>开启includePadding时, 实际占用高度为(2174 - -566)/2048 = 133.8%</p>
+</li>
+</ul>
+<h4 id="12-2-开启includePadding时上下各多占多少空白"><a href="/2016/TextView文字实际高度分析/#12-2-开启includePadding时上下各多占多少空白" class="headerlink" title="12.2 开启includePadding时上下各多占多少空白?"></a>12.2 开启includePadding时上下各多占多少空白?</h4><p>上面多(2174-1900)/2048 = 13.4%，下面多(566-500)/2048 = 3.2%</p>
+<h4 id="12-3-单行文字英文dp实际图案高度和上下空白多少"><a href="/2016/TextView文字实际高度分析/#12-3-单行文字英文dp实际图案高度和上下空白多少" class="headerlink" title="12.3 单行文字英文dp实际图案高度和上下空白多少?"></a>12.3 单行文字英文dp实际图案高度和上下空白多少?</h4><p>ymax(d)=1547，ymin(p)=-427<br>实际占用高度为(1547 - -427)/2048 = 96.4%</p>
+<ul>
+<li><p>禁止includePadding时，距离上边界(1900-1547)/2048=17.2%，距离下边界(-427 - -500)/2048=3.6%，如希望垂直方向精确居中，需补偿下边距17.2%-3.6%=13.6%</p>
+</li>
+<li><p>开启includePadding时，距离上边界(2174-1547)/2048=30.6%，距离下边界(-427 - -566)/2048=6.8%，如希望垂直方向精确居中，需补偿下边距30.6%-6.8%=23.8%</p>
+</li>
+</ul>
+<h4 id="12-4-单行文字英文M实际图案高度和上下空白多少"><a href="/2016/TextView文字实际高度分析/#12-4-单行文字英文M实际图案高度和上下空白多少" class="headerlink" title="12.4 单行文字英文M实际图案高度和上下空白多少?"></a>12.4 单行文字英文M实际图案高度和上下空白多少?</h4><p>ymax(M)=1467，ymin(M)=-11<br>实际占用高度为(1467 - -11)/2048 = 72.2%</p>
+<ul>
+<li>禁止includePadding时，距离上边界(1900-1467)/2048=21.1%，距离下边界(-11 - -500)/2048=23.9%，如希望垂直方向精确居中，需补偿上边距23.9-21.1%=2.8%</li>
+<li>开启includePadding时，距离上边界(2174-1467)/2048=34.5%，距离下边界(-11 - -566)/2048=27.1%，如希望垂直方向精确居中，需补偿下边距34.5%-27.1%=7.4%</li>
+</ul>
+<h4 id="12-5-单行文字中文实际图案高度和上下空白多少"><a href="/2016/TextView文字实际高度分析/#12-5-单行文字中文实际图案高度和上下空白多少" class="headerlink" title="12.5 单行文字中文实际图案高度和上下空白多少?"></a>12.5 单行文字中文实际图案高度和上下空白多少?</h4><p>只考虑常用中文情况下，fallback生效的字体是思源字体，因为两者区别极小，所以以SourceHanSansCN-Normal.ttf的值来计算，UPM=1000</p>
+<p>常用中文字符的ymax和ymin都是字符’夔’(\u5914)，ymax(夔)=842，ymin(夔)=-74<br>实际占用高度为(842 - -74)/1000 = 91.6%</p>
+<ul>
+<li>禁止includePadding时，距离上边界1900/2048-842/1000=8.6%，距离下边界-74/1000 - -500/2048=17.0%，如希望垂直方向精确居中，需补偿上边距17.0-8.6%=8.4%</li>
+<li>开启includePadding时，距离上边界2174/2048-842/1000=22.0%，距离下边界-74/1000 - -566/2048=20.2%，如希望垂直方向精确居中，需补偿下边距22.0%-20.2%=1.8%</li>
+</ul>
+<p>所以，如果想指定偏大的高度值让英文垂直居中，禁止includePadding更居中，想让中文垂直居中，开启includePadding更居中</p>
+<h3 id="13-如何测量设计稿的文字尺寸？"><a href="/2016/TextView文字实际高度分析/#13-如何测量设计稿的文字尺寸？" class="headerlink" title="13. 如何测量设计稿的文字尺寸？"></a>13. 如何测量设计稿的文字尺寸？</h3><p>PS上设置的文字尺寸、画图设置的文字尺寸，都跟实际回执的文字高度不一样，没找到规律，想精确还原设计稿，还是直接量取PNG的字符高度较好</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;问题&quot;&gt;&lt;a href=&quot;#问题&quot; class=&quot;headerlink&quot; title=&quot;问题&quot;&gt;&lt;/a&gt;问题&lt;/h2&gt;&lt;p&gt;做Android开发的人都知道怎么设置文字高度：&lt;/p&gt;
+&lt;figure class=&quot;highlight xml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;2&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;3&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;4&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;5&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;6&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;TextView&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;attr&quot;&gt;android:layout_width&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;wrap_content&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;attr&quot;&gt;android:layout_height&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;wrap_content&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;attr&quot;&gt;android:includeFontPadding&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;false&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;attr&quot;&gt;android:textSize&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;20sp&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;attr&quot;&gt;android:text&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;Abc&quot;&lt;/span&gt; /&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;可是有多少人注意到，在手机上这个TextView的实际高度是并不是20sp，那实际高度是多少？&lt;/p&gt;
+&lt;p&gt;换句话说，&lt;strong&gt;如何使TextView文字的尺寸位置与设计稿精确一致？&lt;/strong&gt;&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="android" scheme="http://neutra.github.io/categories/android/"/>
+    
+    
+      <category term="android" scheme="http://neutra.github.io/tags/android/"/>
+    
+      <category term="字体" scheme="http://neutra.github.io/tags/%E5%AD%97%E4%BD%93/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Nginx代理抓取HTTP数据</title>
+    <link href="http://neutra.github.io/2014/Nginx%E4%BB%A3%E7%90%86%E6%8A%93%E5%8F%96HTTP%E6%95%B0%E6%8D%AE/"/>
+    <id>http://neutra.github.io/2014/Nginx代理抓取HTTP数据/</id>
+    <published>2014-01-04T16:00:00.000Z</published>
+    <updated>2016-08-31T03:50:43.559Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近一个项目，要捕捉HTTP请求和响应的数据，由于通讯双方都不好控制，所以打算配个HTTP代理来抓取数据。</p>
+<p>先尝试了nginx和squid，发现两者都无法记录响应内容，这是什么原因？</p>
+<p>仔细想了想，估计是网站上很多静态文件，尺寸大，很多还不是文本，在日志里记录响应内容确实是弊大于利，至于动态页面，在代码层面可以记录更多细节。所以，代理软件的日志里记录响应内容就显得很鸡肋了。</p>
+<p>想到这点，我就没继续尝试其他的代理软件了。时间有限，也没找到专门的工具，所以继续想办法。</p>
+<p>既然默认的日志不记录，要不尝试抓包？</p>
+<p>于是尝试了下tcpdump，可它输出数据太原始，后期处理成本很高。而且我要的是长期稳定的方案，tcpdump更像用于分析网络异常，作为长期方案似乎不合适。</p>
+<p>放弃了tcpdump后，自然就想到用node.js写个小程序做中转。</p>
+<p>只是，使用外部程序的话，中间多一次通讯，便多一层风险。万一程序挂了，那就影响本来的通讯了。所以这种方式暂定为下策，继续寻求其他方案。</p>
+<p>不用外部程序，nginx自带模块又没有直接提供这功能，就试下伟大的LUA了（未婚男程序员的福音）。</p>
+<p>（待续）</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;最近一个项目，要捕捉HTTP请求和响应的数据，由于通讯双方都不好控制，所以打算配个HTTP代理来抓取数据。&lt;/p&gt;
+&lt;p&gt;先尝试了nginx和squid，发现两者都无法记录响应内容，这是什么原因？&lt;/p&gt;
+&lt;p&gt;仔细想了想，估计是网站上很多静态文件，尺寸大，很多还不是文本，
+    
+    </summary>
+    
+      <category term="others" scheme="http://neutra.github.io/categories/others/"/>
+    
+    
+      <category term="nginx" scheme="http://neutra.github.io/tags/nginx/"/>
+    
+      <category term="lua" scheme="http://neutra.github.io/tags/lua/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>node.js的同异步调用的转换</title>
+    <link href="http://neutra.github.io/2013/node.js%E7%9A%84%E5%90%8C%E5%BC%82%E6%AD%A5%E8%B0%83%E7%94%A8%E7%9A%84%E8%BD%AC%E6%8D%A2/"/>
+    <id>http://neutra.github.io/2013/node.js的同异步调用的转换/</id>
+    <published>2013-11-10T16:00:00.000Z</published>
+    <updated>2016-08-31T06:24:01.899Z</updated>
+    
+    <content type="html"><![CDATA[<a id="more"></a>
+<p>node.js的同步调用是这样的：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sync</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> x = sync(); </div><div class="line"><span class="built_in">console</span>.log(x);</div></pre></td></tr></table></figure></p>
+<p>而异步调用则是这样的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">function async(callback) &#123;</div><div class="line">	callback(0);</div><div class="line">&#125;</div><div class="line"></div><div class="line">async(function(x)&#123; </div><div class="line">	console.log(x);</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>假如，某个函数本来是异步方式的，某天需求变了，要改成同步方式，很简单：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">async</span>(<span class="params">callback</span>) </span>&#123;</div><div class="line">	callback(sync());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>但是，反过来则很难。因为callback原本并不存在：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sync</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	<span class="comment">//async(callback???);</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>偶然的情况下，发现了一个叫node-fibers的库，看示例代码：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Fiber = <span class="built_in">require</span>(<span class="string">'fibers'</span>);</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sleep</span>(<span class="params">ms</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> fiber = Fiber.current;</div><div class="line">    setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">        fiber.run();</div><div class="line">    &#125;, ms);</div><div class="line">    Fiber.yield();</div><div class="line">&#125;</div><div class="line"></div><div class="line">Fiber(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'wait... '</span> + <span class="keyword">new</span> <span class="built_in">Date</span>);</div><div class="line">    sleep(<span class="number">1000</span>);</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'ok... '</span> + <span class="keyword">new</span> <span class="built_in">Date</span>);</div><div class="line">&#125;).run();</div><div class="line"><span class="built_in">console</span>.log(<span class="string">'back in main'</span>);</div></pre></td></tr></table></figure></p>
+<p>Fiber居然在一个同步的方法调用内部(sleep(ms))，实现了异步调用(setTimeout)，而回调正是Fiber.yield()之后的代码！</p>
+<p>感叹作者神一般的封装之余，瞄了几眼代码，果然，是用了Native code实现的：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * `Fiber.yield()` will halt execution of the current fiber and return control</div><div class="line"> * back to original caller of run(). If an argument is supplied to yield(),</div><div class="line"> * run() will return that value.</div><div class="line"> *</div><div class="line"> * When run() is called again, yield() will return.</div><div class="line"> *</div><div class="line"> * Note that this function is a global to allow for correct garbage</div><div class="line"> * collection. This results in no loss of functionality because it is only</div><div class="line"> * valid to yield from the currently running fiber anyway.</div><div class="line"> *</div><div class="line"> * Note also that `yield` is a reserved word in Javascript. This is normally</div><div class="line"> * not an issue, however some code linters may complain. Rest assured that it</div><div class="line"> * will run fine now and in future versions of Javascript.</div><div class="line"> */</div><div class="line">Fiber.yield = <span class="function"><span class="keyword">function</span>(<span class="params">param</span>) </span>&#123;</div><div class="line">    [native code]</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>node-fibers的实现方式虽然不是很’node’，但它最大的价值，是把node.js的同异步调用的转换，补上了完美的句号。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;p&gt;node.js的同步调用是这样的：&lt;br&gt;&lt;figure class=&quot;highlight javascript&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;
+    
+    </summary>
+    
+      <category term="others" scheme="http://neutra.github.io/categories/others/"/>
+    
+    
+      <category term="node.js" scheme="http://neutra.github.io/tags/node-js/"/>
+    
+      <category term="异步" scheme="http://neutra.github.io/tags/%E5%BC%82%E6%AD%A5/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>新浪微博sdk(android)提示21337的处理方法</title>
+    <link href="http://neutra.github.io/2013/%E6%96%B0%E6%B5%AA%E5%BE%AE%E5%8D%9Asdk-android-%E6%8F%90%E7%A4%BA21337%E7%9A%84%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95/"/>
+    <id>http://neutra.github.io/2013/新浪微博sdk-android-提示21337的处理方法/</id>
+    <published>2013-11-10T16:00:00.000Z</published>
+    <updated>2016-08-31T03:50:38.627Z</updated>
+    
+    <content type="html"><![CDATA[<p>发现很多朋友都遇到这个问题，我把我在github上的回复和邮件回复都记录在下面，有空再整理下：</p>
+<blockquote>
+<p><a href="https://github.com/mobileresearch/weibo_android_sdk/issues/35" target="_blank" rel="external">issues/35</a><br>error_code=21337, error:appkey permission denied是啥意思 帐号已经审核通过了。 在<a href="http://open.weibo.com/wiki/Error_code" target="_blank" rel="external">http://open.weibo.com/wiki/Error_code</a>错误代码里也没找到</p>
+</blockquote>
+<p>8月初我也遇到这个问题，当时我用的是在另一个app正在用的分享代码，sdk是2.0。</p>
+<p>换了新申请成功的新的app的账号和回调地址，登录授权后总提示Fail to received access token字样，网上搜到的方法都无法解决，有个说过几天好了，那等等看。</p>
+<p>等到9月了，依然是这个问题。查了log，发现weibo返回的是这个错误21337，网上说法是，新申请的app，只能用新的jar， 旧的不能用了。旧的账号用旧的jar就可以。</p>
+<p>于是看了下最新的sdk，瀑布汗，改得都api跟微信api一个样了，这代价是几乎完全重做分享模块的新浪部分啊，坑爹啊有木有？！</p>
+<p>一开始想是不是传闻中parseInt的问题，反编译看了下sdk2.0的，好吧，jar里的已经是parseLong了，网上那堆搜搜就贴代码的大神还是洗洗睡吧。</p>
+<p>结果，不知被新浪坑死了，还是被新浪的“官方sdk”坑死了。</p>
+<hr>
+<p>新注册的不能用0714的sdk 因为不再支持直接返回access_token，只能走服务端验证流程先获取code，再去换accesstoken。0821版本sdk不能用，因为api大改并只支持sso，没装则会提示安装新浪微博客户端；0806版本部分可用，api部分不可用因为替换成sso的调用方式了，所以应用0714的api的代码+0806的登陆授权代码，并用反射设置两个私有静态字段，再签名。。。。。。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">weibo = Weibo.getInstance(APP_KEY, REDIRECT_URL, SCOPE); setStaticStringField(Weibo.class, <span class="string">"app_secret"</span>, APP_SECRET); setStaticStringField(Weibo.class, <span class="string">"mPackageName"</span>, getPackageName(activity));</div></pre></td></tr></table></figure>
+<p>原来的StatusAPI和WeiboAPI复制出来，就成功在装了和没装新浪客户端的机子上分享微博</p>
+<p>新浪微博Weibo_SDK的0714和0806的源码，可以在<a href="https://github.com/mobileresearch/weibo_android_sdk" target="_blank" rel="external">github</a>上找到，注意是<a href="https://github.com/mobileresearch/weibo_android_sdk/commits/master" target="_blank" rel="external">commit历史</a>那里</p>
+<p>源代码没改，用了0806的，用反射篡改了几个值</p>
+<p>大概是0704左右的版本 有StatusAPI等一堆API的辅助类，不过0806版本删掉了这部分，demo的api会检查是否安装新浪微博客户端。</p>
+<p>所以不要用0806的发微薄API， 把0704那堆API类复制到自己的代码目录里来用。。。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">final</span> String SCOPE = <span class="string">"direct_messages_write"</span>;</div><div class="line">weibo = Weibo.getInstance(APP_KEY, REDIRECT_URL, SCOPE);</div><div class="line">BeanRefUtil.setStaticStringField(Weibo.class, <span class="string">"app_secret"</span>, APP_SECRET);</div><div class="line">BeanRefUtil.setStaticStringField(Weibo.class, <span class="string">"mPackageName"</span>, getPackageName());</div><div class="line"></div><div class="line"><span class="comment">// BeanRefUtil.java</span></div><div class="line"></div><div class="line"><span class="keyword">import</span> java.lang.reflect.Field;</div><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BeanRefUtil</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">getStaticStringField</span><span class="params">(Class cls, String fieldName)</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span>&#123;</div><div class="line">            Field field = cls.getDeclaredField(fieldName);</div><div class="line">            field.setAccessible(<span class="keyword">true</span>);</div><div class="line">            <span class="keyword">return</span> (String)field.get(<span class="keyword">null</span>);</div><div class="line">        &#125;<span class="keyword">catch</span> (NoSuchFieldException e)&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">        &#125;<span class="keyword">catch</span> (IllegalAccessException e)&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">setStaticStringField</span><span class="params">(Class cls, String fieldName, String value)</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span>&#123;</div><div class="line">            Field field = cls.getDeclaredField(fieldName);</div><div class="line">            field.setAccessible(<span class="keyword">true</span>);</div><div class="line">            field.set(<span class="keyword">null</span>, value);</div><div class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">        &#125;<span class="keyword">catch</span> (NoSuchFieldException e)&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">        &#125;<span class="keyword">catch</span> (IllegalAccessException e)&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;发现很多朋友都遇到这个问题，我把我在github上的回复和邮件回复都记录在下面，有空再整理下：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/mobileresearch/weibo_android_sdk/issues/3
+    
+    </summary>
+    
+      <category term="android" scheme="http://neutra.github.io/categories/android/"/>
+    
+    
+      <category term="android" scheme="http://neutra.github.io/tags/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>(备忘)Sublime3下的CoffeeScript环境配置</title>
+    <link href="http://neutra.github.io/2013/(%E5%A4%87%E5%BF%98)Sublime3%E4%B8%8B%E7%9A%84CoffeeScript%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/"/>
+    <id>http://neutra.github.io/2013/(备忘)Sublime3下的CoffeeScript环境配置/</id>
+    <published>2013-11-01T16:00:00.000Z</published>
+    <updated>2016-08-31T03:50:30.805Z</updated>
+    
+    <content type="html"><![CDATA[<p>先安装PackageControl这个神器:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">cd ~/.config/sublime-text-3/Packages</div><div class="line"></div><div class="line">git clone https://github.com/wbond/sublime_package_control.git &quot;Package Control&quot;</div></pre></td></tr></table></figure>
+<p>然后启动 sublime，按下 Ctrl + Shift + P</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">install package:  BetterCoffeeScript</div></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;先安装PackageControl这个神器:&lt;/p&gt;
+&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;
+    
+    </summary>
+    
+      <category term="others" scheme="http://neutra.github.io/categories/others/"/>
+    
+    
+      <category term="coffeescript" scheme="http://neutra.github.io/tags/coffeescript/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>微信5之后公众帐号不能一键关注的原因</title>
+    <link href="http://neutra.github.io/2013/%E5%BE%AE%E4%BF%A15%E4%B9%8B%E5%90%8E%E5%85%AC%E4%BC%97%E5%B8%90%E5%8F%B7%E4%B8%8D%E8%83%BD%E4%B8%80%E9%94%AE%E5%85%B3%E6%B3%A8%E7%9A%84%E5%8E%9F%E5%9B%A0/"/>
+    <id>http://neutra.github.io/2013/微信5之后公众帐号不能一键关注的原因/</id>
+    <published>2013-11-01T16:00:00.000Z</published>
+    <updated>2016-08-31T03:50:28.077Z</updated>
+    
+    <content type="html"><![CDATA[<p>微信5发布之后，产品那边反映一键关注的方法不管用了。</p>
+<p>所谓的一键关注，之前就是使用一个URL地址，写个A标签，类似下面这样：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">'weixin://qr/tnXb1AvEJDVbhxq3nyCS'</span>&gt;</span>关注曝工资<span class="tag">&lt;/<span class="name">a</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>或者用http的也行:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">'http://weixin.qq.com/r/tnXb1AvEJDVbhxq3nyCS'</span>&gt;</span>关注曝工资<span class="tag">&lt;/<span class="name">a</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>当用户在非微信浏览器上点击这个链接时，假如用户设备上安装了微信，微信就会拦截这两种请求，打开并跳转到该公众账号的介绍页面（当然没登陆的会先提示登录）。</p>
+<p>微信5发布之后，产品那边就发现，假如点击一键关注，浏览器不会跳转到微信的介绍页面，甚至还会提示错误并退出。</p>
+<p>为了确定微信5做了什么限制，于是我用apktool分别对微信4.5和5.0的版本解压出来对比了下，才确定了原因。</p>
+<p>这是微信5.0的manifest：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">activity</span> <span class="attr">android:theme</span>=<span class="string">"@style/Theme.Transparent"</span> <span class="attr">android:name</span>=<span class="string">"com.tencent.mm.ui.qrcode.GetQRCodeInfoUI"</span> <span class="attr">android:permission</span>=<span class="string">"com.tencent.mm.permission.GET_QRCODE_INFO"</span> <span class="attr">android:exported</span>=<span class="string">"false"</span> <span class="attr">android:configChanges</span>=<span class="string">"keyboardHidden|orientation"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.VIEW"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.DEFAULT"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.BROWSABLE"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">data</span> <span class="attr">android:scheme</span>=<span class="string">"http"</span> <span class="attr">android:host</span>=<span class="string">"weixin.qq.com"</span> <span class="attr">android:pathPrefix</span>=<span class="string">"/r/"</span> /&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.VIEW"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.DEFAULT"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.BROWSABLE"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">data</span> <span class="attr">android:scheme</span>=<span class="string">"weixin"</span> <span class="attr">android:host</span>=<span class="string">"qr"</span> /&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>这是微信4.5的manifest:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">activity</span> <span class="attr">android:theme</span>=<span class="string">"@style/Theme.Transparent"</span> <span class="attr">android:name</span>=<span class="string">".ui.qrcode.GetQRCodeInfoUI"</span> <span class="attr">android:configChanges</span>=<span class="string">"keyboardHidden|orientation"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.VIEW"</span> /&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.DEFAULT"</span> /&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.BROWSABLE"</span> /&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">data</span> <span class="attr">android:scheme</span>=<span class="string">"http"</span> <span class="attr">android:host</span>=<span class="string">"weixin.qq.com"</span> <span class="attr">android:pathPrefix</span>=<span class="string">"/r/"</span> /&gt;</span></div><div class="line">		<span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.VIEW"</span> /&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.DEFAULT"</span> /&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.BROWSABLE"</span> /&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">data</span> <span class="attr">android:scheme</span>=<span class="string">"weixin"</span> <span class="attr">android:host</span>=<span class="string">"qr"</span> /&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>可以发现，微信5增加了一个叫做GET_QRCODE_INFO的自定义权限，猜测是为了当扫描二维码的时候，依然可以通过跳转网址跳转到关注页面。再来看看这个权限的定义声明：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">permission</span> <span class="attr">android:name</span>=<span class="string">"com.tencent.mm.permission.GET_QRCODE_INFO"</span> <span class="attr">android:protectionLevel</span>=<span class="string">"signature"</span> /&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"com.tencent.mm.permission.GET_QRCODE_INFO"</span> /&gt;</span></div></pre></td></tr></table></figure>
+<p>注意到protectionLevel=signature，要求app的签名跟微信的签名一致，才能有这个权限。微信的私钥可能拿到吗？当然基本上不可能，所以只有微信的”扫一扫”，才可以跳转到相应的介绍页，第三方应用都可以洗洗睡了。</p>
+<p>理论上可以暴力地使自己的应用成为系统应用，这样就可以无视微信的限制，只是这个方法并不现实……</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;微信5发布之后，产品那边反映一键关注的方法不管用了。&lt;/p&gt;
+&lt;p&gt;所谓的一键关注，之前就是使用一个URL地址，写个A标签，类似下面这样：&lt;/p&gt;
+&lt;figure class=&quot;highlight xml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pr
+    
+    </summary>
+    
+      <category term="android" scheme="http://neutra.github.io/categories/android/"/>
+    
+    
+      <category term="android" scheme="http://neutra.github.io/tags/android/"/>
+    
+      <category term="微信" scheme="http://neutra.github.io/tags/%E5%BE%AE%E4%BF%A1/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Ubuntu+Intellij+adb环境问题集锦</title>
+    <link href="http://neutra.github.io/2013/Ubuntu+Intellij+adb%E7%8E%AF%E5%A2%83%E9%97%AE%E9%A2%98%E9%9B%86%E9%94%A6/"/>
+    <id>http://neutra.github.io/2013/Ubuntu+Intellij+adb环境问题集锦/</id>
+    <published>2013-11-01T16:00:00.000Z</published>
+    <updated>2016-08-31T03:50:34.727Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="Intellij提示device-is-not-available"><a href="/2013/Ubuntu+Intellij+adb环境问题集锦/#Intellij提示device-is-not-available" class="headerlink" title="Intellij提示device is not available"></a>Intellij提示device is not available</h2><p>Intellij在运行android程序时提示错误 Can’t upload file: device is not available.</p>
+<p>在终端，使用 adb devices命令，显示设备状态是正常的(device)</p>
+<p>使用 adb install xxx 或 adb uninstall yyy 都提示Failure</p>
+<p>手机上也是显示已经是调试模式</p>
+<p>解决办法：关掉手机调试模式，再打开。最好再重启下adb</p>
+<h2 id="环境搭建"><a href="/2013/Ubuntu+Intellij+adb环境问题集锦/#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><p>1.安装adb</p>
+<p>2.安装jdk和intellij</p>
+<p>3.把adb的所在目录加到启动PATH</p>
+<h2 id="设备接上后，adb无法识别"><a href="/2013/Ubuntu+Intellij+adb环境问题集锦/#设备接上后，adb无法识别" class="headerlink" title="设备接上后，adb无法识别"></a>设备接上后，adb无法识别</h2><p>首先要确定设备的生产商id(idVendor)和产品id(idProduct)<br>打开终端，连上USB，输入lsusb并回车；断开USB，再次输入lsusb并回车。 对比下两次打印的列表，可以看到区别是类似下面这样一行：</p>
+<p>Bus 001 Device 027: ID 2717:1220</p>
+<p>记下后面两个数字，前面的数字是生产商id而后面的是产品id</p>
+<p>在adb_usb.ini中添加一行，<strong>文件末尾不要加空行</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">vi ~/.android/adb_usb.ini</div><div class="line">0x2717</div></pre></td></tr></table></figure>
+<p>修改udev配置并重启udev和adb</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">sudo chmod 666 /etc/udev/rules/51-android.rules</div><div class="line">sudo vi /etc/udev/rules/51-android.rules</div><div class="line"></div><div class="line">SUBSYSTEM==&quot;usb&quot;, ATTR&#123;idVendor&#125;==&quot;2207&quot;, ATTR&#123;idProduct&#125;==&quot;0010&quot;, MODE=&quot;0666&quot;，OWNER==&quot;&lt;当前用户名&gt;&quot;</div><div class="line"></div><div class="line">sudo service udev restart</div><div class="line"></div><div class="line">sudo chown root:root $ANDROID_SDK/tools/adb</div><div class="line">sudo chmod a+s $ANDROID_SDK/tools/adb</div><div class="line"></div><div class="line">adn kill-server</div><div class="line">adb devices</div></pre></td></tr></table></figure>
+<h2 id="一些奇葩设备ID"><a href="/2013/Ubuntu+Intellij+adb环境问题集锦/#一些奇葩设备ID" class="headerlink" title="一些奇葩设备ID"></a>一些奇葩设备ID</h2><blockquote>
+<p>原道 N70S 2207:0010</p>
+<p>小米 红米 2717:1220</p>
+</blockquote>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;Intellij提示device-is-not-available&quot;&gt;&lt;a href=&quot;/2013/Ubuntu+Intellij+adb环境问题集锦/#Intellij提示device-is-not-available&quot; class=&quot;headerlink&quot; t
+    
+    </summary>
+    
+      <category term="android" scheme="http://neutra.github.io/categories/android/"/>
+    
+    
+      <category term="android" scheme="http://neutra.github.io/tags/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Java的Checked异常</title>
+    <link href="http://neutra.github.io/2013/Java%E7%9A%84Checked%E5%BC%82%E5%B8%B8/"/>
+    <id>http://neutra.github.io/2013/Java的Checked异常/</id>
+    <published>2013-09-07T16:00:00.000Z</published>
+    <updated>2016-08-31T03:50:24.316Z</updated>
+    
+    <content type="html"><![CDATA[<p>Java里的异常分为Checked和Unchecked两类，其中RuntimeException及其派生类被称为Unchecked异常，其余则是Checked异常。</p>
+<blockquote>
+<p>+- Throwable   // 可以被throw/catch<br>|+- Error      // 通常表示错误，跟Unchecked异常差不多<br>|+- Exception  // Checked异常<br>||+- RuntimeException // Unchecked异常</p>
+</blockquote>
+<p>编译器会检查所有抛出的的Checked异常都有被显式处理（throws也算显式处理）。</p>
+<h2 id="示例"><a href="/2013/Java的Checked异常/#示例" class="headerlink" title="示例"></a>示例</h2><p>对于Unchecked异常，使用上跟C#的异常没什么两样：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UncheckedException</span> <span class="keyword">extends</span> <span class="title">RuntimeException</span></span>&#123;&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span></span>&#123;</div><div class="line">	<span class="keyword">if</span>( x &lt;= <span class="number">0</span>)&#123;</div><div class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> UncheckedException();</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>而对于Checked异常，如果像上面那样写的话，编译会失败，提示”Unhandled Exception: CheckedException”：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">CheckedException</span> <span class="keyword">extends</span> <span class="title">Exception</span></span>&#123;&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span></span>&#123;</div><div class="line">	<span class="keyword">if</span>( x &lt;= <span class="number">0</span>)&#123;</div><div class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> CheckedException(); <span class="comment">// Error</span></div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>要通过编译，可以加上try/catch处理掉这个异常：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span></span>&#123;</div><div class="line">	<span class="keyword">try</span>&#123;</div><div class="line">		<span class="keyword">if</span>( x &lt;= <span class="number">0</span>)&#123;</div><div class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> CheckedException();</div><div class="line">		&#125;</div><div class="line">	<span class="keyword">catch</span>(CheckedException e)&#123;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>也可以在方法后声明throws：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span> <span class="keyword">throws</span> CheckedException</span>&#123;</div><div class="line">	<span class="keyword">if</span>( x &lt;= <span class="number">0</span>)&#123;</div><div class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> CheckedException();</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>不过这样的话，调用Run()的方法也必须处理这个异常了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run2</span><span class="params">()</span></span>&#123;</div><div class="line">	<span class="keyword">try</span>&#123;</div><div class="line">		Run();</div><div class="line">	<span class="keyword">catch</span>(CheckedException e)&#123;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run3</span><span class="params">()</span> <span class="keyword">throws</span> CheckedException</span>&#123;</div><div class="line">	Run();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="throws是方法签名一部分吗"><a href="/2013/Java的Checked异常/#throws是方法签名一部分吗" class="headerlink" title="throws是方法签名一部分吗?"></a>throws是方法签名一部分吗?</h2><p>throws和返回类型都是方法的元数据，自然也是方法签名的一部分：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">interface</span> <span class="title">I</span> </span>&#123;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>因为方法可以重载，所以我们可以写出同样的名字但参数不同的方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>&#123;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> x)</span></span>&#123;&#125;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(String x)</span></span>&#123;&#125; <span class="comment">// OK</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>返回类型不同则会编译错误，因为编译器将不知道要调用哪个:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>&#123;</div><div class="line">	<span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span></span>&#123;<span class="keyword">return</span> <span class="number">0</span>;&#125;</div><div class="line">	<span class="function">String <span class="title">f</span><span class="params">()</span></span>&#123;<span class="keyword">return</span> <span class="string">""</span>;&#125; <span class="comment">// Error: f() is already defined in A</span></div><div class="line">&#125;</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span></span>&#123;</div><div class="line">	<span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> x)</span></span>&#123;<span class="keyword">return</span> <span class="number">0</span>;&#125;</div><div class="line">	<span class="function">String <span class="title">f</span><span class="params">(String x)</span></span>&#123;<span class="keyword">return</span> <span class="string">""</span>;&#125; <span class="comment">// OK</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>throws与返回类型类似：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>&#123;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;&#125;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">()</span> <span class="keyword">throws</span> RuntimeException</span>&#123;&#125; <span class="comment">// Error: f() is already defined in A</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span></span>&#123;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> x)</span></span>&#123;&#125;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(String x)</span> <span class="keyword">throws</span> Exception</span>&#123;&#125; <span class="comment">// OK</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>可以这么认为：<strong> 方法名和参数类型确定要调用哪个方法，返回类型跟throws对调用者产生约束。 </strong></p>
+<h2 id="Checked异常带来的问题"><a href="/2013/Java的Checked异常/#Checked异常带来的问题" class="headerlink" title="Checked异常带来的问题"></a>Checked异常带来的问题</h2><p>假如原先有这么段代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NoPowerException</span> <span class="keyword">extends</span> <span class="title">Exception</span> </span>&#123;&#125;</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Car</span></span>&#123;</div><div class="line">	<span class="keyword">private</span> <span class="keyword">int</span> power = <span class="number">0</span>;</div><div class="line"></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span> <span class="keyword">throws</span> NoPowerException</span>&#123;</div><div class="line">		<span class="keyword">if</span>(power &lt;= <span class="number">0</span>)&#123;</div><div class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> NoPowerException();</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">	    Car car = <span class="keyword">new</span> Car();</div><div class="line">	    <span class="keyword">try</span> &#123;</div><div class="line">		    car.Run();</div><div class="line">	    &#125; <span class="keyword">catch</span> (NoPowerException e) &#123;</div><div class="line">	    &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>后来出现了一种能飞的车，但有重量限制，这时候纠结了……<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TooHeavyException</span> <span class="keyword">extends</span> <span class="title">Exception</span></span>&#123;&#125;</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AirCar</span> <span class="keyword">extends</span> <span class="title">Car</span> </span>&#123;</div><div class="line">	<span class="keyword">private</span> <span class="keyword">int</span> weight = <span class="number">0</span>;</div><div class="line">	<span class="meta">@Override</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span> <span class="keyword">throws</span> NoPowerException </span>&#123;</div><div class="line">		<span class="keyword">if</span>(weight &gt; <span class="number">10</span>)&#123;</div><div class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> TooHeavyException(); <span class="comment">// Unhandled Exception：TooHeavyException </span></div><div class="line">		&#125;</div><div class="line">		<span class="keyword">super</span>.Run();</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">	    Car car = <span class="keyword">new</span> AirCar();</div><div class="line">	    <span class="keyword">try</span> &#123;</div><div class="line">		    car.Run();</div><div class="line">	    &#125; <span class="keyword">catch</span> (NoPowerException e) &#123;</div><div class="line">	    &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<ul>
+<li><p>方法1: 将TooHeavyException改继承自RuntimeException</p>
+<blockquote>
+<p>某一天调用者大呼坑爹：IDE只提示我要处理NoPowerException，这个TooHeavyException哪来的，是愚人节彩蛋吗？</p>
+</blockquote>
+</li>
+<li><p>方法2: Car.Run和AirCar.Run的方法后面都加上TooHeavyException的声明</p>
+<blockquote>
+<p>因为子类而修改父类是大忌，Car本来对TooHeavyException一无所知，加这个声明很难说得通，如果Car这个类是第三方或者JDK里的，这方法就走不通了。</p>
+</blockquote>
+</li>
+<li><p>方法3: 能飞的还叫Car做啥？我们从零开始造AirCar吧~</p>
+<blockquote>
+<p>代价好高……</p>
+</blockquote>
+</li>
+<li><p>方法4: 不叫Run，叫DoRun()吧~</p>
+<blockquote>
+<p>假如Car里面有其他代码调用过Run()方法，那就哭了。这么改下去，代码更难读了……</p>
+</blockquote>
+</li>
+<li><p>方法n: 期待各位补充</p>
+</li>
+</ul>
+<h2 id="小结"><a href="/2013/Java的Checked异常/#小结" class="headerlink" title="小结"></a>小结</h2><p>方法的返回类型和throws都是对调用方的约束，并且这种约束还不能通过继承实现多态的，相比之下，Erlang/Javascript在这方面都没有限制，扩展起来倒是舒服很多。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Java里的异常分为Checked和Unchecked两类，其中RuntimeException及其派生类被称为Unchecked异常，其余则是Checked异常。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;+- Throwable   // 可以被throw/catch&lt;b
+    
+    </summary>
+    
+      <category term="others" scheme="http://neutra.github.io/categories/others/"/>
+    
+    
+      <category term="java" scheme="http://neutra.github.io/tags/java/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>请不要让程序员去琢磨设计师的意图</title>
+    <link href="http://neutra.github.io/2013/%E8%AF%B7%E4%B8%8D%E8%A6%81%E8%AE%A9%E7%A8%8B%E5%BA%8F%E5%91%98%E5%8E%BB%E7%90%A2%E7%A3%A8%E8%AE%BE%E8%AE%A1%E5%B8%88%E7%9A%84%E6%84%8F%E5%9B%BE/"/>
+    <id>http://neutra.github.io/2013/请不要让程序员去琢磨设计师的意图/</id>
+    <published>2013-08-09T16:00:00.000Z</published>
+    <updated>2016-08-31T03:50:20.876Z</updated>
+    
+    <content type="html"><![CDATA[<p>程序员的主要心思应该花在实现预定的需求上，而不是花在猜文艺青年的意图上。程序员大多是屌丝级别的，写完代码还要吃饭休息的，猜不中也没喝咖啡的闲工夫去猜。</p>
+<h2 id="UI-≠-图片"><a href="/2013/请不要让程序员去琢磨设计师的意图/#UI-≠-图片" class="headerlink" title="UI ≠ 图片"></a>UI ≠ 图片</h2><p>UI对应的是 用户交互接口，默认情况下，输出默认界面。这个界面通常就是提供的那张PNG图片。</p>
+<p>但是，大多数情况下一张图片的信息根本不足够。</p>
+<p>以曝工资客户端欢迎页为例，这张图足够简单：</p>
+<p>这是曝工资的欢迎页，这幅图大概是480x800。那么：</p>
+<ol>
+<li><p>对于720x1280的屏幕，或者320x480的屏幕，或者更奇葩的屏幕，显示效果应该怎样？</p>
+<blockquote>
+<p>有N种可能，居中/拉伸/等宽/等高/按某个方向切割/等比缩放到某个轴</p>
+</blockquote>
+</li>
+<li><p>图中明显由3个部分组成：图标、放射背景、文本。那么，不同屏幕尺寸下，这些部分的关系是怎样的？</p>
+<blockquote>
+<p>当然，居中是毫无疑问的。但底部的文字位置怎样？按现有Y轴比例映射，还是底部对齐，还是顶部对齐？行间距字体大小呢？</p>
+</blockquote>
+</li>
+</ol>
+<p>对于各老板而言，他们看到这些图只会说“好看”或者“不好看”。但对于做事的人，还需知道那些附加信息。或许产品经理是技术哥的大佬，但貌似还不是老板，该补充的还是要补充完整才对。</p>
+<p>每个元素的布局总会有理由，但是，假如只提供图片，这些意图就丢失了，极可能偏离设计的意图。当然，一切按个人理解或者默认也是可以做出来的，但最后的结果往往就会变成：设计师跑过来说“当初我不是这样设计的啊”，让一个设计师花了一周时间设计出来的咚咚，结果技术哥按自己理解做了个20%还原，何必呢？</p>
+<h2 id="UI-≠-PSD"><a href="/2013/请不要让程序员去琢磨设计师的意图/#UI-≠-PSD" class="headerlink" title="UI ≠ PSD"></a>UI ≠ PSD</h2><p>PSD一定程度的拟补了上面的问题，并给字体大小、颜色、尺寸等提供了精确的数值，还会提供部分交互的视觉效果（例如鼠标按下颜色会增加哪个覆盖图层等）。相对PNG已经好了不少，但还是存在很多未解决的问题：</p>
+<ol>
+<li><p>缩放和对齐。设计提供过来的PSD都是固定尺寸的，换个尺寸该怎么办，既然没说，那就是天晓得了。按我的观点，凡是没在需求里提及的东西，反馈回来的都不是BUG，而是新需求，两者有不同的处理方式和责任归属。</p>
+</li>
+<li><p>PSD只能描述像点击效果那样的简单效果，对稍复杂的效果无能为力。目前来看，产品提供的原型演示稿是对这个部分的补充，例如向上拖动时下面出现分享栏，向下时隐藏，中间需要什么样的过渡效果等。我不知道做设计的文采怎样，大多时候几个字能表达清楚的，偏偏一个字没提，给张PSD了事。</p>
+</li>
+<li><p>PSD无法描述“主题”。一般来看，做界面总是有一系列的画面，这些画面虽然彼此独立，但存在这大量的相似性，这些统一的风格样式就是主题。PSD可以把一个画面里100个元素的色彩描述的准确无误，但却不会告诉程序员，标题的蓝色和文本链接的蓝色是同一个色彩。第一行和第三行底色是一样的，所有的按钮都对齐到同一条直线…</p>
+</li>
+<li><p>由于缺少主题的表达，所以程序员拿到一个PSD，如果想要“精确重现”PSD提供的效果的话，工作量极度的高。我怎么会知道这个蓝色和那个蓝色是不是一样？我怎么会知道这条边和那条边是对齐的？我怎么知道这个颜色是RGB色彩还是RGBA色彩？我切图应该切里面的小图标然后填充整个按钮，还是应该直接切整个按钮的图片？这一系列的不确定最终导致的就是，花费大量的时间才可以完成一个产品经理眼中“很简单的”一个界面、一天测量了几百次只做了一个简单的界面，我无法判断自己效率高还是效率低。</p>
+</li>
+<li><p>第4点假如细心点花点时间基本是可以搞定的。但假如每次都提供PSD就是噩梦了，这会导致工作量成大幅增加。假设版本1按照PSD1做好了，后来给了版本2的PSD，这时候该怎么办？PSD不会告诉你，哪些是变动过的，所以正规的方式应该是，把所有数值全部重新量一遍，再把变更的东西实现。本来，一句话“我把正文字体从16px改成了14px, 蓝色加了10%透明”就可以描述的变更，偏偏给了个文艺版的PSD来，既影响效率也影响心情。</p>
+</li>
+</ol>
+<h2 id="建议"><a href="/2013/请不要让程序员去琢磨设计师的意图/#建议" class="headerlink" title="建议"></a>建议</h2><p>吐槽后还是要给点建议的，不然就没价值了。</p>
+<ul>
+<li><p>原型稿把效果描述得足够清楚（是清楚而不是详细），尽量当面复述一遍，确保双方理解一致</p>
+</li>
+<li><p>既然没更好的方式，就沿用PSD，但尽量提供每个部件的对齐方式说明。尽量用文字，少做效果图，当文字和效果图不符时，文字描述的优先级高于效果图，不然文字描述就没意义。</p>
+</li>
+<li><p>除PSD外提供界面主题说明，把用到的调色板罗列出来，调色板的优先级比文字和效果图都高</p>
+</li>
+<li><p>除非大幅度界面修改，否则除第一版外，所有界面变更不再提供PSD，所有变更用文字描述，附加PNG用于效果说明</p>
+</li>
+<li><p>还是那个观点，凡是没说明的，出了问题都不是BUG。对这个观点有反对观点的，请参考“凡是法律没说不允许的，都不犯法”。</p>
+</li>
+<li><p>严格限制UI特别是APP客户端的改动频率，不能养成“改个图标而已，花不了多少时间”这种惯性思维。对于ANDROID目前的编译速度，不清楚的可以问问做的人，他们会告诉你，喝杯咖啡上个厕所回来，可能还没编译完。</p>
+</li>
+</ul>
+<p><strong> 大家的时间都很宝贵，做效果图很花时间，猜效果图也很花时间，其实这些时间应该花在更有效的沟通上。 </strong></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;程序员的主要心思应该花在实现预定的需求上，而不是花在猜文艺青年的意图上。程序员大多是屌丝级别的，写完代码还要吃饭休息的，猜不中也没喝咖啡的闲工夫去猜。&lt;/p&gt;
+&lt;h2 id=&quot;UI-≠-图片&quot;&gt;&lt;a href=&quot;/2013/请不要让程序员去琢磨设计师的意图/#UI-≠-图片
+    
+    </summary>
+    
+      <category term="others" scheme="http://neutra.github.io/categories/others/"/>
+    
+    
+      <category term="UI" scheme="http://neutra.github.io/tags/UI/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Android实现多行通知栏</title>
+    <link href="http://neutra.github.io/2013/Android%E5%AE%9E%E7%8E%B0%E5%A4%9A%E8%A1%8C%E9%80%9A%E7%9F%A5%E6%A0%8F/"/>
+    <id>http://neutra.github.io/2013/Android实现多行通知栏/</id>
+    <published>2013-07-30T16:00:00.000Z</published>
+    <updated>2016-08-31T03:50:11.305Z</updated>
+    
+    <content type="html"><![CDATA[<p>Android 2.3开始可以通过设置contentView自定义通知栏的布局，但高度却无法改变。</p>
+<p>从4.1开始，Android提供了bigContentView，可以自定义通知栏的高度，并提供了InboxStyle、BigTextStyle、BigPictureStyle三种样式。</p>
+<p>要实现多行内容的通知，可以使用BigTextStyle，代码很简单：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line">* 弹出通知</div><div class="line">* <span class="doctag">@param</span> context 上下文</div><div class="line">* <span class="doctag">@param</span> id 通知ID</div><div class="line">* <span class="doctag">@param</span> icon 图标</div><div class="line">* <span class="doctag">@param</span> text 状态栏文字</div><div class="line">* <span class="doctag">@param</span> title 通知栏标题</div><div class="line">* <span class="doctag">@param</span> content 通知栏内容</div><div class="line">* <span class="doctag">@param</span> intent</div><div class="line">*/</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">notify</span><span class="params">(Context context, <span class="keyword">int</span> id, <span class="keyword">int</span> icon, String text,</span></span></div><div class="line">			String title, String content, Intent intent) &#123;</div><div class="line">	<span class="keyword">long</span> when = System.currentTimeMillis();</div><div class="line">	PendingIntent pendingIntent = PendingIntent.getActivity(context, id, intent, PendingIntent.FLAG_CANCEL_CURRENT);</div><div class="line">	Notification notification;</div><div class="line">	<span class="keyword">final</span> <span class="keyword">int</span> sdk = android.os.Build.VERSION.SDK_INT;</div><div class="line">	<span class="keyword">if</span> (sdk &lt; android.os.Build.VERSION_CODES.JELLY_BEAN) &#123;</div><div class="line">		notification = <span class="keyword">new</span> Notification(icon, text, when);</div><div class="line">		notification.setLatestEventInfo(context, title, content, pendingIntent);</div><div class="line">		notification.flags = Notification.FLAG_AUTO_CANCEL;</div><div class="line">	&#125;<span class="keyword">else</span>&#123;</div><div class="line">		Notification.Builder builder = <span class="keyword">new</span> Notification.Builder(context)</div><div class="line">				.setWhen(when)</div><div class="line">				.setSmallIcon(icon)</div><div class="line">				.setTicker(text)</div><div class="line">				.setContentTitle(title)</div><div class="line">				.setContentIntent(pendingIntent)</div><div class="line">				.setPriority(Notification.PRIORITY_HIGH)</div><div class="line">				.setAutoCancel(<span class="keyword">true</span>);</div><div class="line">		notification = <span class="keyword">new</span> Notification.BigTextStyle( builder )</div><div class="line">				.bigText(content)</div><div class="line">				.build();</div><div class="line">	&#125;</div><div class="line">	((NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE))</div><div class="line">			.notify(id, notification);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Android 2.3开始可以通过设置contentView自定义通知栏的布局，但高度却无法改变。&lt;/p&gt;
+&lt;p&gt;从4.1开始，Android提供了bigContentView，可以自定义通知栏的高度，并提供了InboxStyle、BigTextStyle、BigPictu
+    
+    </summary>
+    
+      <category term="android" scheme="http://neutra.github.io/categories/android/"/>
+    
+    
+      <category term="android" scheme="http://neutra.github.io/tags/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>赋值表达式的值</title>
+    <link href="http://neutra.github.io/2013/%E8%B5%8B%E5%80%BC%E8%A1%A8%E8%BE%BE%E5%BC%8F%E7%9A%84%E5%80%BC/"/>
+    <id>http://neutra.github.io/2013/赋值表达式的值/</id>
+    <published>2013-07-05T16:00:00.000Z</published>
+    <updated>2016-08-31T03:50:07.405Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="coffeescript"><a href="/2013/赋值表达式的值/#coffeescript" class="headerlink" title="coffeescript"></a>coffeescript</h2><p>CoffeeScript有个语法叫解构赋值(Destructuring Assignment)，可以将一个对象的不同成员一次性赋值给多个的变量。官网中给了下面一个例子：<br><figure class="highlight coffee"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">futurists =</div><div class="line">  sculptor: <span class="string">"Umberto Boccioni"</span></div><div class="line">  painter:  <span class="string">"Vladimir Burliuk"</span></div><div class="line">  poet:</div><div class="line">    name:   <span class="string">"F.T. Marinetti"</span></div><div class="line">    address: [</div><div class="line">      <span class="string">"Via Roma 42R"</span></div><div class="line">      <span class="string">"Bellagio, Italy 22021"</span></div><div class="line">    ]</div><div class="line">&#123;poet: &#123;name, address: [street, city]&#125;&#125; = futurists</div><div class="line">alert name + <span class="string">" — "</span> + street</div></pre></td></tr></table></figure></p>
+<p>运行结果自然是 “F.T. Marinetti — Via Roma 42R”，因为coffee将其翻译为下面的JS：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"> <span class="keyword">var</span> city, futurists, name, street, _ref, _ref1;</div><div class="line">futurists = &#123;</div><div class="line">  sculptor: <span class="string">"Umberto Boccioni"</span>,</div><div class="line">  painter: <span class="string">"Vladimir Burliuk"</span>,</div><div class="line">  poet: &#123;</div><div class="line">    name: <span class="string">"F.T. Marinetti"</span>,</div><div class="line">    address: [<span class="string">"Via Roma 42R"</span>, <span class="string">"Bellagio, Italy 22021"</span>]</div><div class="line">  &#125;</div><div class="line">&#125;;</div><div class="line">_ref = futurists.poet, name = _ref.name, (_ref1 = _ref.address, street = _ref1[<span class="number">0</span>], city = _ref1[<span class="number">1</span>]);</div><div class="line">alert(name + <span class="string">" — "</span> + street);</div></pre></td></tr></table></figure></p>
+<p>这个语法跟Erlang的模式匹配有点类似，不同的是，Erlang会严格匹配等号两边，不赋值的要用_作为占位符，否则运行时将抛出异常，而coffee则不会，对于不存在的成员，值为undefined：<br><figure class="highlight coffee"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&#123;poet: &#123;nameX, address: [streetX, city]&#125;&#125; = futurists</div><div class="line"><span class="comment"># nameX = "undefined"</span></div><div class="line"><span class="comment"># streetX = "F.T. Marinetti"</span></div></pre></td></tr></table></figure></p>
+<p>当然，对一个不存在的成员继续解析还是会抛出异常的：<br><figure class="highlight coffee"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&#123;poetX:&#123;a&#125;&#125; = futurists</div><div class="line"><span class="comment"># TypeError: Cannot read property 'a' of undefined</span></div></pre></td></tr></table></figure></p>
+<p>另外，和JS一样，coffee也可以连续赋值:<br><figure class="highlight coffee"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">a=b=<span class="number">100</span></div><div class="line"><span class="comment"># a=100</span></div><div class="line"><span class="comment"># b=100</span></div></pre></td></tr></table></figure></p>
+<p>假如将上面两种语法组合在一起，会怎样呢？就像下面的代码，最终d=?<br><figure class="highlight coffee"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">a=&#123;b:<span class="number">1</span>,c:<span class="number">2</span>,x:<span class="number">3</span>,y:<span class="number">4</span>&#125;</div><div class="line">d=&#123;b,c&#125;=a</div></pre></td></tr></table></figure></p>
+<p>简单分析下： 赋值语句的结合顺序是从右到左，所以d={b,c}=a等价于d=({b,c}=a) 我们还知道，赋值表达式的值是其本身，那么{b,c}=a的值是什么呢，{b,c}还是a? 可以尝试下，coffee会将语句{b,c}=a转成下面的JS：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">b = a.b, c = a.c;</div></pre></td></tr></table></figure></p>
+<p>这样看来，d最终的值会是2，这也太奇怪了吧?</p>
+<p>还是看一下coffee把d={b,c}=a到底翻译成什么吧：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">d = (b = a.b, c = a.c, a);</div></pre></td></tr></table></figure></p>
+<p>结果在意料之内，d的值不是2 结果在意料之外，d的值不是{b,c}</p>
+<p>我一直以为，像{b,c}=a这样的表达式，返回值将会是{b,c}而不是a，然后d={b,c}=a可以按过滤器的方式执行。但是，我错了，{b,c}=a这个表达式的值是a，再写几行代码验证一次：<br><figure class="highlight coffee"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="title">f</span> = <span class="params">(a)</span> -&gt;</span> &#123;b,c&#125;=a</div></pre></td></tr></table></figure></p>
+<p>coffee将上面的代码翻译成<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">f = <span class="function"><span class="keyword">function</span>(<span class="params">a</span>) </span>&#123;</div><div class="line">  <span class="keyword">var</span> b, c;</div><div class="line">  <span class="keyword">return</span> b = a.b, c = a.c, a;</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p>好吧，解析赋值表达式的值确实是等号右边的值。 至于{b,c}=a为何会被译成b = a.b, c = a.c;估计是因为该表达式的值不产生副作用，所以coffee把该表达式的值抛弃了。</p>
+<p>那么，在JS里，普通赋值表达式的值，是不是也是等号右边的值呢？下面的JS语句，result最终应该等于expr1还是expr2呢？<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">result = expr1 = expr2</div></pre></td></tr></table></figure></p>
+<p>乍眼一看，可能会觉得result==expr1且result==expr2，等于哪个都一样。</p>
+<p>是的，在大多情况下，这都是成立的。但是，为什么对于上面的{b,c}=a这类语句，就不一定成立了呢？</p>
+<p>这是因为，不成立的原因是：执行dest = src后，dest 不一定等于 src</p>
+<h2 id="javascript"><a href="/2013/赋值表达式的值/#javascript" class="headerlink" title="javascript"></a>javascript</h2><p>JS中有类似的情形吗？答案当然是肯定的，看下面的JS代码：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> obj, result;</div><div class="line">obj = &#123;&#125;;</div><div class="line"><span class="built_in">Object</span>.defineProperties(obj, &#123;</div><div class="line">  x: &#123;</div><div class="line">    set: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;,</div><div class="line">    get: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">      <span class="keyword">return</span> <span class="number">10</span>;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>将obj.x的读和写分离，就能产生类似的效果。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">obj.x = <span class="number">11</span>;</div><div class="line">result = obj.x;</div><div class="line"><span class="built_in">console</span>.log(result); <span class="comment">// 10</span></div></pre></td></tr></table></figure></p>
+<p>回到正题，继续测试：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">result = obj.x = <span class="number">11</span>;</div><div class="line"><span class="built_in">console</span>.log(result); <span class="comment">// 11</span></div></pre></td></tr></table></figure></p>
+<p>好吧，JS的赋值表达式的值也是等于等号右边的值。 当最右值的读取包含副作用时，会怎样呢？<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> obj, r1, r2, r3;</div><div class="line">obj = &#123;_x:<span class="number">1</span>&#125;;</div><div class="line"><span class="built_in">Object</span>.defineProperties(obj, &#123;</div><div class="line">  x: &#123;</div><div class="line">    set: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;,</div><div class="line">    get: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">      <span class="keyword">return</span> ++_x;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;);</div><div class="line">r1 = r2 = r3 = obj.x</div><div class="line"><span class="built_in">console</span>.log(r1,r2,r3);  <span class="comment">// 2 2 2</span></div></pre></td></tr></table></figure></p>
+<p>嗯…我知道，在get方法包含带副作用的行为是不对的，这段代码只是测试而已~ 结果表明，连续赋值时最右值只计算一次。其实，从AST的执行过程来分析，最右值只计算一次，是合理的。</p>
+<p><a href="http://www.ecma-international.org/ecma-262/5.1/Ecma-262.pdf" target="_blank" rel="external">ECMA文档</a>是这么描述赋值语句的：</p>
+<blockquote>
+<p>11.13.1 Simple Assignment ( = )<br>The production AssignmentExpression : LeftHandSideExpression = AssignmentExpression is evaluated as follows:</p>
+<ol>
+<li>Let lref be the result of evaluating LeftHandSideExpression.</li>
+<li>Let rref be the result of evaluating AssignmentExpression.</li>
+<li>Let rval be GetValue(rref).</li>
+<li>Throw a SyntaxError exception if the following conditions are all true:</li>
+</ol>
+<ul>
+<li>Type(lref) is Reference is true</li>
+<li>IsStrictReference(lref) is true</li>
+<li>Type(GetBase(lref)) is Environment Record</li>
+<li>GetReferencedName(lref) is either “eval” or “arguments”</li>
+</ul>
+<ol>
+<li>Call PutValue(lref, rval).</li>
+<li>Return rval.<br>NOTE When an assignment occurs within strict mode code, its  LeftHandSide must not evaluate to an unresolvable<br>reference. If it does a  ReferenceError exception is thrown upon assignment. The  LeftHandSide also may not be a<br>reference to a data property with the attribute value  {[[Writable]]:false}, to an accessor property with the attribute value<br>{[[Set]]:undefined}, nor to a non-existent property of an object whose [[Extensible]] internal property has the value false. In<br>these cases a TypeError exception is thrown.<br>赋值表达式的返回值是等号右边的值，连续赋值表达式的值自然就是最右值了，而且只会计算一次。</li>
+</ol>
+</blockquote>
+<hr>
+<p>那么，其他语言呢？</p>
+<h2 id="C"><a href="/2013/赋值表达式的值/#C" class="headerlink" title="C#"></a>C#</h2><p>C#也支持连续赋值，再加上坑爹的DateTime.Now，这个问题似乎也会有！ 不过嘛，如果写a=b=DateTime.Now能得到a!=b的概率似乎极小，写个坑爹的get属性吧:<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">class</span> <span class="title">Hole</span></div><div class="line">&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Hole</span>(<span class="params"><span class="keyword">string</span> name,<span class="keyword">int</span> <span class="keyword">value</span></span>)</span></div><div class="line">    &#123;</div><div class="line">        _name = name;</div><div class="line">        _value = <span class="keyword">value</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">string</span> _name;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> _value;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">int</span> Value</div><div class="line">    &#123;</div><div class="line">        <span class="keyword">get</span> &#123; Console.WriteLine(<span class="string">"get &#123;0&#125; &#123;1&#125;"</span>, _name, _value); <span class="keyword">return</span> _value; &#125;</div><div class="line">        <span class="keyword">set</span> &#123; Console.WriteLine(<span class="string">"set &#123;0&#125;=&#123;1&#125;"</span>, _name, <span class="keyword">value</span>); &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span>(<span class="params"><span class="keyword">string</span>[] args</span>)</span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">var</span> a = <span class="keyword">new</span> Hole(<span class="string">"a"</span>, <span class="number">10</span>);</div><div class="line">    <span class="keyword">var</span> b = <span class="keyword">new</span> Hole(<span class="string">"b"</span>, <span class="number">11</span>);</div><div class="line">    <span class="keyword">var</span> c = <span class="keyword">new</span> Hole(<span class="string">"c"</span>, <span class="number">12</span>);</div><div class="line">    <span class="keyword">var</span> d = c.Value = b.Value = a.Value;</div><div class="line">    Console.WriteLine(<span class="string">"d=&#123;0&#125;"</span>,d);</div><div class="line">    <span class="comment">//get a 10</span></div><div class="line">    <span class="comment">//set b=10</span></div><div class="line">    <span class="comment">//set c=10</span></div><div class="line">    <span class="comment">//d=10</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>跟JS类似，C#的连续赋值里，赋值表达式的值也是等号右边的值，最右值也只会计算一次。dynamic呢？也一样。</p>
+<p><a href="http://www.microsoft.com/en-us/download/details.aspx?id=7029" target="_blank" rel="external">C# 4.0语言规范</a> 7.17.1 这么描述赋值表达式：</p>
+<blockquote>
+<p>The result of a simple assignment expression is the value assigned to the left operand. The result has the same type as the left operand and is always classified as a value.</p>
+</blockquote>
+<h2 id="Erlang"><a href="/2013/赋值表达式的值/#Erlang" class="headerlink" title="Erlang"></a>Erlang</h2><p>因为erlang的模式匹配属于严格匹配，左右值必然严格相同，并且变量不可变，似乎不会有上面的歧义。<br><figure class="highlight erlang"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;_,Y&#125;=&#123;X,_&#125;=&#123;a,b&#125;.   <span class="comment">% &#123;a,b&#125;</span></div></pre></td></tr></table></figure></p>
+<p>对于涉及到副作用的代码，像时间戳/随机值，就难说了：<br><figure class="highlight erlang"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">A=B=random:uniform(<span class="number">1234567890</span>).  <span class="comment">% okey</span></div></pre></td></tr></table></figure></p>
+<p>没出现模式匹配错误，说明erlang中最右值也只计算一次。</p>
+<h2 id="原因"><a href="/2013/赋值表达式的值/#原因" class="headerlink" title="原因"></a>原因</h2><p>赋值表达式的值为何总是右值而不是左值？</p>
+<p>我估计，按赋值表达式的语意，等号的左边总是“可写”的，右边总是“可读”的。如果赋值表达式的值是左边的值，那么程序需要重新计算等号左边的值才能返回，这带来两个问题，一是性能，二是左边的对象不一定可读（例如那些可写但不可读的属性）。于是，几乎所有语言都将“所赋的值”作为赋值语句的返回值，所以连续赋值语句的行为总是“计算最右值一次，从右向左赋值多次”。</p>
+<p>但是，对于coffee的解构赋值表达式，情况则有点不同，因为coffee必须将该表达式拆分成两个，当c是一个包含副作用的属性时，a=b=c和b=c;a=c;并不是等价的，所以，对于解构赋值表达式来说，等号右边的表达式实际被求值了多次。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;coffeescript&quot;&gt;&lt;a href=&quot;/2013/赋值表达式的值/#coffeescript&quot; class=&quot;headerlink&quot; title=&quot;coffeescript&quot;&gt;&lt;/a&gt;coffeescript&lt;/h2&gt;&lt;p&gt;CoffeeScript有个语法
+    
+    </summary>
+    
+      <category term="others" scheme="http://neutra.github.io/categories/others/"/>
+    
+    
+      <category term="赋值" scheme="http://neutra.github.io/tags/%E8%B5%8B%E5%80%BC/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>支付宝WAP支付接口开发</title>
+    <link href="http://neutra.github.io/2013/%E6%94%AF%E4%BB%98%E5%AE%9DWAP%E6%94%AF%E4%BB%98%E6%8E%A5%E5%8F%A3%E5%BC%80%E5%8F%91/"/>
+    <id>http://neutra.github.io/2013/支付宝WAP支付接口开发/</id>
+    <published>2013-07-01T16:00:00.000Z</published>
+    <updated>2016-08-31T03:50:03.224Z</updated>
+    
+    <content type="html"><![CDATA[<p>因项目需要，要增加支付宝手机网站支付功能，找了支付宝的样例代码和接口说明，折腾两天搞定，谨以此文作为这两天摸索的总结。由于公司有自己的支付接口，并不直接使用这个接口，所以晚些时候打算把测试代码整理好放到Github上。</p>
+<h2 id="1-开发前准备"><a href="/2013/支付宝WAP支付接口开发/#1-开发前准备" class="headerlink" title="1. 开发前准备"></a>1. 开发前准备</h2><blockquote>
+<ol>
+<li><p>到官网了解此接口的信息，下载样例代码（只有ASP.NET和PHP）以便随时参考。</p>
+</li>
+<li><p>一个通过实名认证的企业支付宝账号，并申请开通手机WAP支付功能，我的测试账号是拿公司的，申请流程不清楚，官网有说怎么申请，各位各显神通吧。</p>
+</li>
+<li><p>公网域名和node.js环境。下面的代码大多用coffee来表达，不过本文不会贴太多代码，即使对coffee不熟悉也没什么关系。关于coffee可以参考这里。</p>
+</li>
+</ol>
+</blockquote>
+<p>github上有两个开源小项目（搜索 alipay ），但都没有WAP支付功能，可以拿来当参考，可以认为是示例代码的js移植版，结构很相像。我原打算在其中一个项目基础上继续开发，看了代码和接口文档后，还是决定从头开发一个。因为原有代码层次不够清晰，有点过度设计的感觉，而且支付宝的接口很简单，重写工作量不大。</p>
+<p>吐槽下： 官网的示例代码真只是示例级(test)而已，跟产品级(production)还隔比较远，感觉还谈不上SDK。接口文档相当的坑爹，正因如此我才觉得有必要好好写篇文章总结。</p>
+<h2 id="2-流程"><a href="/2013/支付宝WAP支付接口开发/#2-流程" class="headerlink" title="2. 流程"></a>2. 流程</h2><p>接口开发最重要的应该是理解数据交互流程了，流程弄清了，并理解为何这么设计，开发起来也是事半功倍</p>
+<p>首先，要准备下面几个参数：</p>
+<blockquote>
+<ol>
+<li><p>企业支付宝账号的PID(也叫ParnerID)和KEY，如果使用RSA签名而不是MD5的话，还要把RSA私钥准备好</p>
+</li>
+<li><p>支付时用户看到的东西：商品名称(subject)、支付总额（total_fee）、购买数量（通常都是1吧）</p>
+</li>
+<li><p>交易后的跳转地址，交易成功后用户可以手工点击，或页面延迟自动跳转到这个地址(return_url)</p>
+</li>
+<li><p>交易状态异步通知地址，交易成功或交易关闭会把消息POST到这个地址(notify_url)</p>
+</li>
+</ol>
+</blockquote>
+<p>然后，看这幅流程图（不错吧，推荐下这个网站:）</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130728121400.png" alt=""></p>
+<blockquote>
+<p>Alipay WAP pay flow</p>
+<p>Browzer-&gt;+Site: 1. HTTP GET<br>note over Site: 2. create a new trade<br>Site-&gt;+Alipay: 3. create redirect<br>Alipay-&gt;-Site: 4. Token<br>note over Site: 5. build auth url<br>Site-&gt;-Browzer: 6. redirect to auth url<br>Browzer-&gt;Alipay: 7. redirect<br>Alipay-&gt;Browzer: 8. trade info<br>Browzer-&gt;Alipay: 9. auth and pay<br>Alipay-&gt;+Site: 10. HTTP POST notify<br>note over Site: 11. process trade<br>Site-&gt;-Alipay: 12. reply “success”<br>Alipay-&gt;Browzer: 13. pay success<br>Browzer-&gt;Site: 14. goto return url</p>
+</blockquote>
+<p>这个流程图基本囊括了整个交互过程，下面是说明:</p>
+<blockquote>
+<ol>
+<li>用户点击购买按钮（或其他形式），向网站发起购买请求</li>
+<li>网站创建订单，指派一个唯一订单号</li>
+<li>网站把订单号、企业支付宝账号、交易金额、数量等信息，用私钥&gt; 签名发送给支付宝</li>
+<li>支付宝创建一个交易订单，返回一个交易令牌(token)</li>
+<li>网站按照指定要求，用token和自己的私钥，构造一个重定向得&gt; 到支付地址</li>
+<li>网站把重定向地址返回给浏览器</li>
+<li>浏览器自动重定向到该地址，即包含了token、网站签名的支付宝&gt; 交易页面</li>
+<li>支付宝显示当前交易金额、数量、卖家等信息</li>
+<li>用户用自己的支付宝账号支付这笔金额</li>
+<li>支付宝把用户支付成功（或失败）这个消息和订单号加上支付宝&gt; 的签名，使用HTTP POST的方式通知网站（失败的话，会隔段时间重新发送）</li>
+<li>网站处理交易后续逻辑（发货、订单状态存储之类的）</li>
+<li>网站返回”success”字符串给支付宝，表示该通知已经处理，不&gt; 用再重发</li>
+<li>支付宝显示支付成功页面给用户（这一步和第10步是不分先后发&gt; 生的）</li>
+<li>支付成功页面延迟自动跳转，或用户点击“返回商户页面”，跳转&gt; 到网站的支付结束页面（此时不一定成功处理支付宝发来的通知&gt; ），但会在URL带上当前的订单号和状态。</li>
+</ol>
+</blockquote>
+<p>可以发现，整个流程有点像OAuth（哎呀，之前那篇文章还没写&gt; 完呢！），主要分三步：</p>
+<p>一是申请支付宝交易号（获取token），这一步可以理解为，让支付宝验证网站的有效性、让网站指定该交易要支付多少钱 二是用户到支付宝页面付款，这一步可以理解为，让支付宝验证用户有效性，让用户在一个不受网站监视的环境下进行支付 三是用户付款后，处理结果页面告诉用户支付成功（同步通知），另外异步通知网站服务器该订单已支付。</p>
+<p>支付宝的接口文档说只有两个步骤，感觉不是很好理解，三步还是比较准确的（收钱肯定要办事的嘛）。</p>
+<p>好困，细节问题下期继续。。。</p>
+<hr>
+<p>2013-07-24</p>
+<h2 id="3-细节"><a href="/2013/支付宝WAP支付接口开发/#3-细节" class="headerlink" title="3. 细节"></a>3. 细节</h2><h3 id="3-1-网站向支付宝申请新订单"><a href="/2013/支付宝WAP支付接口开发/#3-1-网站向支付宝申请新订单" class="headerlink" title="3.1 网站向支付宝申请新订单"></a>3.1 网站向支付宝申请新订单</h3><p>网站的订单系统先产生一个新订单，然后请求支付宝创建一个支付宝订单.</p>
+<p>申请新订单的service是 alipay.wap.trade.create.direct 需要提交的关键参数包括：</p>
+<h4 id="3-1-1-用户在支付宝看到的订单信息："><a href="/2013/支付宝WAP支付接口开发/#3-1-1-用户在支付宝看到的订单信息：" class="headerlink" title="3.1.1 用户在支付宝看到的订单信息："></a>3.1.1 用户在支付宝看到的订单信息：</h4><blockquote>
+<p>subject: 商品名称<br>total_fee: 总金额<br>seller_account_name: 卖家支付宝账号（估计跟私钥绑定的）<br>merchant_url: 商品展示URL（似乎这个并非必要)</p>
+</blockquote>
+<h4 id="3-1-2-支付宝通知网站时将附带的信息："><a href="/2013/支付宝WAP支付接口开发/#3-1-2-支付宝通知网站时将附带的信息：" class="headerlink" title="3.1.2 支付宝通知网站时将附带的信息："></a>3.1.2 支付宝通知网站时将附带的信息：</h4><blockquote>
+<p>out_trade_no: 该次交易对应网站的订单号（要求唯一）<br>call_back_url: 交易成功后，支付宝页面上“返回到商家页面”的地址（同步回调）<br>notify_url: 交易状态变更后，支付宝通知网站的回调地址（异步通知）</p>
+</blockquote>
+<p>支付宝验证通过后，将返回新创建的支付宝订单号，网站可将该订单号与自己订单系统的的订单号绑定在一起。支付宝同时返回的还有该次交易的token，用于(3.2)用户支付。</p>
+<h3 id="3-2-用户在支付宝网站，查看订单消息，通过验证并支付"><a href="/2013/支付宝WAP支付接口开发/#3-2-用户在支付宝网站，查看订单消息，通过验证并支付" class="headerlink" title="3.2 用户在支付宝网站，查看订单消息，通过验证并支付"></a>3.2 用户在支付宝网站，查看订单消息，通过验证并支付</h3><p>网站返回跳转到支付宝的地址，service是alipay.wap.auth.authAndExecute，包含(3.1)返回的token和网站对跳转地址的签名</p>
+<p>这是个HTTPS页面，基本认为是安全的。当然前提是浏览器没被动手脚，安卓不少应用被捆绑广告那是常有的事，手机浏览器对HTTPS也不像PC那样有明显提示，这些也是我不怎么信任手机支付的原因。</p>
+<p>用户跳转到支付宝页面后，可以在该页面里看到当前支付的订单的名称和金额，这些是3.1申请时由网站指定的，让用户在支付宝的页面确认一次再付款是合理的。</p>
+<h3 id="3-3-支付宝通知网站支付成功，网站收钱做事"><a href="/2013/支付宝WAP支付接口开发/#3-3-支付宝通知网站支付成功，网站收钱做事" class="headerlink" title="3.3 支付宝通知网站支付成功，网站收钱做事"></a>3.3 支付宝通知网站支付成功，网站收钱做事</h3><p>这个过程是支付宝通知网站，网站处理后通知用户已到账，共包括两个并行部分：</p>
+<h4 id="3-3-1-异步通知"><a href="/2013/支付宝WAP支付接口开发/#3-3-1-异步通知" class="headerlink" title="3.3.1 异步通知"></a>3.3.1 异步通知</h4><p>用户支付后，支付宝通过HTTP协议通知网站该订单交易结果。说白了就是支付宝悄悄地告诉网站“这个订单已经已经付款啦”</p>
+<p>值得注意的是，异步通知有重发机制，支付宝需要得到响应为”success”才认为该通知成功被接收，否则会间隔一段时间重发，依次间隔2m,10m,10m,1h,2h,6h,15h，最多8次通知，由notify_id说明是同一个通知。8次通知都接收失败怎么办？额orz…文档没说，用那个支付宝订单号登录支付宝去查账吧。</p>
+<h4 id="3-3-2-同步通知"><a href="/2013/支付宝WAP支付接口开发/#3-3-2-同步通知" class="headerlink" title="3.3.2 同步通知"></a>3.3.2 同步通知</h4><p>用户支付后，支付宝页面提示“支付成功”，可点击返回商家页面，也可等待一段时间自动跳回</p>
+<p>个人认为，网站跳到这个页面后，如果仍未收到(3.3.1)异步通知，并且使用的是MD5签名，应该把状态从“待付款”调整为“等待对账”，而不应该贸然相信该通知的结果。原因是这个回调地址用户是可以知道的，MD5签名还是有被伪造的可能(4.3)。当然额外再做个token之类的理论上也行（需要放在urlpath而不是querystring）。</p>
+<p>假如接口调用出错，通知是不会签名的。不签名的原因我怀疑是防止有人恶意收集请求-签名样本，见(4.3)。</p>
+<h2 id="4-签名与加密"><a href="/2013/支付宝WAP支付接口开发/#4-签名与加密" class="headerlink" title="4. 签名与加密"></a>4. 签名与加密</h2><p>简单的说，签名防篡改，加密防窃听。上面的两种请求(3.1和3.2)和两个通知(3.3.1和3.3.2)都被要加签名，支付宝支持下面两类签名：</p>
+<h3 id="4-1-MD5-业务数据不加密，防篡改"><a href="/2013/支付宝WAP支付接口开发/#4-1-MD5-业务数据不加密，防篡改" class="headerlink" title="4.1 MD5: 业务数据不加密，防篡改"></a>4.1 MD5: 业务数据不加密，防篡改</h3><p>优点: 相对较简单（当然是相对DSA/RSA来说），计算速度快，明文更直观</p>
+<p>缺点: 可抵赖，可能被窃听、安全性不如非对称加密</p>
+<h3 id="4-2-DSA-RSA-业务数据加密，也防篡改"><a href="/2013/支付宝WAP支付接口开发/#4-2-DSA-RSA-业务数据加密，也防篡改" class="headerlink" title="4.2 DSA/RSA: 业务数据加密，也防篡改"></a>4.2 DSA/RSA: 业务数据加密，也防篡改</h3><p>优点：不可抵赖，安全性较高</p>
+<p>缺点：相对较复杂，解密速度慢</p>
+<p>一开始我想不懂，支付宝既然支持RSA为何还要支持MD5，后来有人说RSA太慢，想想支付宝的业务量就释然了。由于每个商家的私钥都不同，并且跟商家的支付宝账号绑定，即使商家的私钥被破解了，用户支付时HTTPS协议基本可以保证用户支付的目标还是商家的账号。</p>
+<h3 id="4-3-使用MD5签名可能存在的风险"><a href="/2013/支付宝WAP支付接口开发/#4-3-使用MD5签名可能存在的风险" class="headerlink" title="4.3 使用MD5签名可能存在的风险"></a>4.3 使用MD5签名可能存在的风险</h3><p>以下情景仅是我的推断，没有尝试过，所谓道高一尺魔高一丈，希望读者也别以身犯险。</p>
+<p>在用户支付的步骤(3.2)和支付成功响应页面(3.3)，用户可以得到一个明文请求内容和对应签名。由于网站和支付宝直接通信共用同一个密钥，一般长期不变，双方都可以对同一段数据产生签名，这就有可能抵赖的风险：</p>
+<p>网站：“这个数据是你发过来的，上面有你的签名。”</p>
+<p>支付宝：“不是我发的。这个数据是你伪造的，签名是你签的。”</p>
+<p>另外，当攻击者收集到足够多的样本，是有可能破解出密钥的，继而可伪造网站或支付宝任意一方。</p>
+<h4 id="4-3-1-恶意消耗商家的订单号"><a href="/2013/支付宝WAP支付接口开发/#4-3-1-恶意消耗商家的订单号" class="headerlink" title="4.3.1 恶意消耗商家的订单号"></a>4.3.1 恶意消耗商家的订单号</h4><p>攻击者伪造大量未使用的订单号（不少网站的订单号都是递增的纯数字，并公开给用户，且很容易推测到后面的数字），向支付宝请求订单，直到超时。由于商家对此并不知情（回调地址和通知地址均篡改掉），其他用户下单时假如商家用了被伪造过的订单号，就可能被支付宝认为提交了重复订单，结果支付失败。</p>
+<h4 id="4-3-2-欺骗商家已支付订单"><a href="/2013/支付宝WAP支付接口开发/#4-3-2-欺骗商家已支付订单" class="headerlink" title="4.3.2 欺骗商家已支付订单"></a>4.3.2 欺骗商家已支付订单</h4><p>由同步通知(3.3.2)返回的参数可以看到，网站订单标识和交易token和都是可以得到的。这样的话，关于步骤(3.1)，用户不知道的参数包括notify_url和out_user_no，假如网站的用户id本身就是公开的，通知回调地址（3.3.1）被得知或同步通知（3.3.2）实现的不好，就可以通过伪造支付通知，欺骗商家订单已支付。</p>
+<p>待续，下期补充实现代码</p>
+<hr>
+<p>2013-07-28</p>
+<h2 id="5-代码"><a href="/2013/支付宝WAP支付接口开发/#5-代码" class="headerlink" title="5. 代码"></a>5. 代码</h2><h3 id="5-1-签名"><a href="/2013/支付宝WAP支付接口开发/#5-1-签名" class="headerlink" title="5.1 签名"></a>5.1 签名</h3><p>我只做了MD5签名，项目里没用到RSA签名，就没做那方面。按照文档说明和demo源代码，很容易就可以写出下面的签名代码：</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="title">getSign</span> = <span class="params">(obj,key)</span> -&gt;</span></div><div class="line">	<span class="keyword">return</span> <span class="literal">null</span> <span class="keyword">unless</span> obj</div><div class="line">	arr = ([k,v] <span class="keyword">for</span> k,v <span class="keyword">of</span> obj <span class="keyword">when</span> k <span class="keyword">isnt</span> <span class="string">'sign'</span> <span class="keyword">and</span> v? <span class="keyword">and</span> v <span class="keyword">isnt</span> <span class="string">''</span>)</div><div class="line">	arr.sort()</div><div class="line">	src = (<span class="string">"<span class="subst">#&#123;i[<span class="number">0</span>]&#125;</span>=<span class="subst">#&#123;i[<span class="number">1</span>]&#125;</span>"</span> <span class="keyword">for</span> i <span class="keyword">in</span> arr).join <span class="string">'&amp;'</span></div><div class="line">	src = <span class="string">"<span class="subst">#&#123;src&#125;</span><span class="subst">#&#123;key&#125;</span>"</span></div><div class="line">	crypto.createHash(<span class="string">'md5'</span>).update(src,<span class="string">'utf8'</span>).digest <span class="string">'hex'</span></div></pre></td></tr></table></figure>
+<p>支付宝发到网站的通知(3.3)的签名算法跟上面有点不一样，文档有这么段说明：</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130728094842.png" alt=""></p>
+<p>这里说要按通知的参数的原本顺序计算签名。所以我就把上面的arr.sort()去掉然后计算签名，结果发通知发来的签名和我自己计算的不一致，纠结半天后仔细看文档的样例说明，看到下面段：</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130728094218.png" alt=""></p>
+<p>仔细跟实际接收的数据比较之后发现，文档和样例都说发来的参数顺序是(service,v,sec_id,notify_data)，但我实际收到的并不是按这个顺序，只要按照文档的参数顺序重新排列再计算签名就正确了，最终通知的签名算法如下( 真是个蛋疼的大坑orz)：</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="title">getNotitySign</span> = <span class="params">(obj,key)</span> -&gt;</span></div><div class="line">	<span class="keyword">return</span> <span class="literal">null</span> <span class="keyword">unless</span> obj</div><div class="line">	src = (<span class="string">"<span class="subst">#&#123;k&#125;</span>=<span class="subst">#&#123;obj[k]&#125;</span>"</span> <span class="keyword">for</span> k <span class="keyword">in</span> [<span class="string">"service"</span>,<span class="string">"v"</span>,<span class="string">"sec_id"</span>,<span class="string">"notify_data"</span>]).join <span class="string">'&amp;'</span></div><div class="line">	src = <span class="string">"<span class="subst">#&#123;src&#125;</span><span class="subst">#&#123;key&#125;</span>"</span></div><div class="line">	crypto.createHash(<span class="string">'md5'</span>).update(src,<span class="string">'utf8'</span>).digest <span class="string">'hex'</span></div></pre></td></tr></table></figure>
+<p>文档里有说到字符编码参数_input_charset，我用的是utf8编码，发现不用传这个参数也可以，看来支付宝默认的字符编码就是utf8了</p>
+<p>如果使用RSA签名，需要先解密再计算签名</p>
+<h3 id="5-2-辅助方法"><a href="/2013/支付宝WAP支付接口开发/#5-2-辅助方法" class="headerlink" title="5.2 辅助方法"></a>5.2 辅助方法</h3><p>为了代码层次更清晰，我把签名、url拼接等方法抽出到一个单独模块(alipay_api.coffee):</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div></pre></td><td class="code"><pre><div class="line">api_url = <span class="string">"http://wappaygw.alipay.com/service/rest.htm"</span></div><div class="line">regexTokenXml = <span class="regexp">/&lt;request_token&gt;(.*)&lt;\/request_token&gt;/</span></div><div class="line"></div><div class="line"><span class="built_in">module</span>.exports = api = </div><div class="line"></div><div class="line">	services:</div><div class="line">		create: <span class="string">"alipay.wap.trade.create.direct"</span></div><div class="line">		auth: <span class="string">"alipay.wap.auth.authAndExecute"</span></div><div class="line"></div><div class="line">	toReqData: <span class="function"><span class="params">(name,obj)</span> -&gt;</span></div><div class="line">		arr = [<span class="string">"&lt;<span class="subst">#&#123;name&#125;</span>&gt;"</span>]</div><div class="line">		arr.push <span class="string">"&lt;<span class="subst">#&#123;k&#125;</span>&gt;<span class="subst">#&#123;v&#125;</span>&lt;/<span class="subst">#&#123;k&#125;</span>&gt;"</span> <span class="keyword">for</span> k,v <span class="keyword">of</span> obj</div><div class="line">		arr.push <span class="string">"&lt;/<span class="subst">#&#123;name&#125;</span>&gt;"</span></div><div class="line">		arr.join <span class="string">''</span></div><div class="line"></div><div class="line">	createReq: <span class="function"><span class="params">(service,partner,req_data)</span> -&gt;</span> </div><div class="line">		service : service</div><div class="line">		format  : <span class="string">'xml'</span></div><div class="line">		v       : <span class="string">'2.0'</span></div><div class="line">		partner : partner</div><div class="line">		sec_id  : <span class="string">'MD5'</span></div><div class="line">		sign    : <span class="literal">null</span></div><div class="line">		req_data: req_data</div><div class="line"></div><div class="line">	parseTokenFromXml: <span class="function"><span class="params">(xml)</span> -&gt;</span></div><div class="line">		<span class="keyword">return</span> <span class="literal">null</span> <span class="keyword">unless</span> xml</div><div class="line">		m = regexTokenXml.exec xml</div><div class="line">		m?[<span class="number">1</span>]?.trim()</div><div class="line"></div><div class="line">	getSign: <span class="function"><span class="params">(obj,key=<span class="string">''</span>)</span> -&gt;</span></div><div class="line">		<span class="keyword">return</span> <span class="literal">null</span> <span class="keyword">unless</span> obj</div><div class="line">		arr = ([k,v] <span class="keyword">for</span> k,v <span class="keyword">of</span> obj <span class="keyword">when</span> k <span class="keyword">isnt</span> <span class="string">'sign'</span> <span class="keyword">and</span> v? <span class="keyword">and</span> v <span class="keyword">isnt</span> <span class="string">''</span>)</div><div class="line">		arr.sort()</div><div class="line">		src = (<span class="string">"<span class="subst">#&#123;i[<span class="number">0</span>]&#125;</span>=<span class="subst">#&#123;i[<span class="number">1</span>]&#125;</span>"</span> <span class="keyword">for</span> i <span class="keyword">in</span> arr).join <span class="string">'&amp;'</span></div><div class="line">		src = <span class="string">"<span class="subst">#&#123;src&#125;</span><span class="subst">#&#123;key&#125;</span>"</span></div><div class="line">		crypto.createHash(<span class="string">'md5'</span>).update(src,<span class="string">'utf8'</span>).digest <span class="string">'hex'</span></div><div class="line"></div><div class="line">	getNotitySign: <span class="function"><span class="params">(obj,key=<span class="string">''</span>)</span> -&gt;</span></div><div class="line">		<span class="keyword">return</span> <span class="literal">null</span> <span class="keyword">unless</span> obj</div><div class="line">		src = (<span class="string">"<span class="subst">#&#123;k&#125;</span>=<span class="subst">#&#123;obj[k]&#125;</span>"</span> <span class="keyword">for</span> k <span class="keyword">in</span> [<span class="string">"service"</span>,<span class="string">"v"</span>,<span class="string">"sec_id"</span>,<span class="string">"notify_data"</span>]).join <span class="string">'&amp;'</span></div><div class="line">		src = <span class="string">"<span class="subst">#&#123;src&#125;</span><span class="subst">#&#123;key&#125;</span>"</span></div><div class="line">		crypto.createHash(<span class="string">'md5'</span>).update(src,<span class="string">'utf8'</span>).digest <span class="string">'hex'</span></div><div class="line"></div><div class="line">	sendCreate: <span class="function"><span class="params">(req,done)</span> -&gt;</span></div><div class="line">		opt =</div><div class="line">			url: createCreateUrl req</div><div class="line">		request.get opt, <span class="function"><span class="params">(err,res,body)</span> -&gt;</span></div><div class="line">			<span class="keyword">return</span> done err <span class="keyword">if</span> err</div><div class="line">			body = <span class="string">""</span> <span class="keyword">unless</span> body</div><div class="line">			ret = querystring.parse body</div><div class="line">			body = <span class="literal">null</span></div><div class="line">			done <span class="literal">null</span>,ret</div><div class="line"></div><div class="line">	createAuthUrl: <span class="function"><span class="params">(token=<span class="string">''</span>,key=<span class="string">''</span>)</span> -&gt;</span></div><div class="line">		req = api.createReq api.services.auth</div><div class="line">		req.req_data = <span class="string">"&lt;auth_and_execute_req&gt;&lt;request_token&gt;<span class="subst">#&#123;token&#125;</span>&lt;/request_token&gt;&lt;/auth_and_execute_req&gt;"</span></div><div class="line">		req.sign = api.getSign req, <span class="literal">yes</span></div><div class="line">		createAuthUrl req</div><div class="line"><span class="function"></span></div><div class="line"><span class="title">createCreateUrl</span> = <span class="params">(req)</span> -&gt;</div><div class="line">	url = <span class="string">"<span class="subst">#&#123;api_url&#125;</span>?"</span></div><div class="line">	url += <span class="string">"req_data=<span class="subst">#&#123;encodeURIComponent req.req_data&#125;</span>"</span></div><div class="line">	url += <span class="string">"&amp;service=<span class="subst">#&#123;encodeURIComponent req.service&#125;</span>"</span></div><div class="line">	url += <span class="string">"&amp;sec_id=<span class="subst">#&#123;encodeURIComponent req.sec_id&#125;</span>"</span></div><div class="line">	url += <span class="string">"&amp;partner=<span class="subst">#&#123;encodeURIComponent req.partner&#125;</span>"</span></div><div class="line">	url += <span class="string">"&amp;req_id=<span class="subst">#&#123;encodeURIComponent req.req_id&#125;</span>"</span></div><div class="line">	url += <span class="string">"&amp;sign=<span class="subst">#&#123;encodeURIComponent req.sign&#125;</span>"</span></div><div class="line">	url += <span class="string">"&amp;format=<span class="subst">#&#123;encodeURIComponent req.format&#125;</span>"</span></div><div class="line">	url += <span class="string">"&amp;v=<span class="subst">#&#123;encodeURIComponent req.v&#125;</span>"</span></div><div class="line">	url</div><div class="line"><span class="function"></span></div><div class="line"><span class="title">createAuthUrl</span> = <span class="params">(req)</span> -&gt;</div><div class="line">	url = <span class="string">"<span class="subst">#&#123;api_url&#125;</span>?"</span></div><div class="line">	url += <span class="string">"req_data=<span class="subst">#&#123;encodeURIComponent req.req_data&#125;</span>"</span></div><div class="line">	url += <span class="string">"&amp;service=<span class="subst">#&#123;encodeURIComponent req.service&#125;</span>"</span></div><div class="line">	url += <span class="string">"&amp;sec_id=<span class="subst">#&#123;encodeURIComponent req.sec_id&#125;</span>"</span></div><div class="line">	url += <span class="string">"&amp;partner=<span class="subst">#&#123;encodeURIComponent req.partner&#125;</span>"</span></div><div class="line">	url += <span class="string">"&amp;sign=<span class="subst">#&#123;encodeURIComponent req.sign&#125;</span>"</span></div><div class="line">	url += <span class="string">"&amp;format=<span class="subst">#&#123;encodeURIComponent req.format&#125;</span>"</span></div><div class="line">	url += <span class="string">"&amp;v=<span class="subst">#&#123;encodeURIComponent req.v&#125;</span>"</span></div><div class="line">	url</div></pre></td></tr></table></figure>
+<h3 id="5-3-业务部分"><a href="/2013/支付宝WAP支付接口开发/#5-3-业务部分" class="headerlink" title="5.3 业务部分"></a>5.3 业务部分</h3><h4 id="5-3-1-购买-buy"><a href="/2013/支付宝WAP支付接口开发/#5-3-1-购买-buy" class="headerlink" title="5.3.1 购买(buy)"></a>5.3.1 购买(buy)</h4><p>购买的逻辑对应于(2)流程图的(2,3,4,5)，创建唯一请求ID，填充本次交易信息，发送到支付宝并获取token，然后拼接支付url并签名，然后重定向。</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line">demo.buy = <span class="function"><span class="params">(info,done)</span> -&gt;</span></div><div class="line">	<span class="keyword">return</span> done <span class="string">'bad user'</span> <span class="keyword">unless</span> info?.user_id?.length&gt;<span class="number">10</span></div><div class="line">	req = api.createReq api.services.create, info.partner</div><div class="line">	ret = </div><div class="line">		redirect: <span class="string">''</span></div><div class="line">		token: <span class="literal">null</span></div><div class="line">	async.series [</div><div class="line">		(cb) -&gt;</div><div class="line">			getRequestId req.service,<span class="function"><span class="params">(err,req_id)</span> -&gt;</span></div><div class="line">				req.req_id = req_id</div><div class="line">				cb err</div><div class="line">		(cb) -&gt;</div><div class="line">			createTrade info,req.req_id,<span class="function"><span class="params">(err, tradeId)</span> -&gt;</span></div><div class="line">				<span class="keyword">return</span> cb err <span class="keyword">if</span> err </div><div class="line">				req.req_data = </div><div class="line">					subject            : info.subject  <span class="comment"># 商品名称</span></div><div class="line">					out_trade_no       : tradeId.toString() <span class="comment"># 网站订单号</span></div><div class="line">					total_fee          : info.total_fee  <span class="comment"># 价钱(number)，单位元，例如 0.01 代表1分钱</span></div><div class="line">					seller_account_name: info.seller_account_name <span class="comment"># 支付宝账号</span></div><div class="line">					call_back_url      : info.call_back_url <span class="comment"># 支付成功后浏览器跳转地址</span></div><div class="line">					notify_url         : info.notify_url <span class="comment"># 支付成功支付宝的通知将异步发送到此地址</span></div><div class="line">					out_user           : info.user_id <span class="comment"># 网站的用户标识</span></div><div class="line">					merchant_url       : info.merchant_url <span class="comment"># 商品展示页面， 只是实际测试时(ios)发现支付时没地方可以跳到这个页面</span></div><div class="line">				req.pay_expire = info.pay_expire <span class="keyword">if</span> info.pay_expire? <span class="comment"># 支付过期时间</span></div><div class="line">				req.req_data = api.toReqData <span class="string">'direct_trade_create_req'</span>,req.req_data</div><div class="line">				req.sign = api.getSign req, info.key</div><div class="line">				cb <span class="literal">null</span></div><div class="line">		(cb) -&gt;</div><div class="line">			api.sendCreate req, <span class="function"><span class="params">(err,res)</span> -&gt;</span></div><div class="line">				<span class="keyword">return</span> cb err <span class="keyword">if</span> err </div><div class="line">				<span class="keyword">return</span> cb <span class="string">'bad sign from alipay server'</span> <span class="keyword">unless</span> req.sign <span class="keyword">is</span> api.getSign req</div><div class="line">				ret.token = api.parseTokenFromXml res.res_data</div><div class="line">				ret.redirect = api.createAuthUrl ret.token</div><div class="line">				storeTradeInfo req.out_trade_no, req.total_fee, ret.token, <span class="function"><span class="params">(err,success)</span> -&gt;</span></div><div class="line">					<span class="keyword">return</span> cb err <span class="keyword">if</span> err</div><div class="line">					cb <span class="keyword">if</span> success <span class="keyword">then</span> <span class="literal">null</span> <span class="keyword">else</span> <span class="string">'store trade info fail'</span></div><div class="line">	],<span class="function"><span class="params">(err)</span> -&gt;</span></div><div class="line">		done err, ret.redirect</div></pre></td></tr></table></figure>
+<p>其中用到的几个方法跟存储相关，我用的是MySQL：</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="title">getRequestId</span> = <span class="params">(service, done)</span> -&gt;</span></div><div class="line">	sql = <span class="string">"insert into alipay_requests(service,create_time,state) values(?,now(),'CREATE')"</span> </div><div class="line">	db.queryAll sql,[service],<span class="function"><span class="params">(err,result)</span> -&gt;</span></div><div class="line">		done err, result?.insertId</div><div class="line"><span class="function"></span></div><div class="line"><span class="title">createTrade</span> = <span class="params">(info,req_id,callback)</span> -&gt;</div><div class="line">	sql = <span class="string">"insert into alipay_trades(user,req_id,create_time) values(?,?,now())"</span> </div><div class="line">	db.queryAll sql,[info.user_id,req_id],<span class="function"><span class="params">(err,result)</span> -&gt;</span></div><div class="line">		callback err, result?.insertId</div><div class="line"><span class="function">		</span></div><div class="line"><span class="title">storeTradeInfo</span> = <span class="params">(tradeId,rmb,token,callback)</span> -&gt;</div><div class="line">	sql = <span class="string">"update alipay_trades set rmb=?,token=?,state='WAIT_PAY' where id = ?"</span></div><div class="line">	args = [rmb,token,tradeId]</div><div class="line">	db.queryAll sql,args,<span class="function"><span class="params">(err,updateResult)</span> -&gt;</span></div><div class="line">		callback err,updateResult?.affectedRows <span class="keyword">is</span> <span class="number">1</span></div></pre></td></tr></table></figure>
+<h4 id="5-3-2-通知-notify"><a href="/2013/支付宝WAP支付接口开发/#5-3-2-通知-notify" class="headerlink" title="5.3.2 通知(notify)"></a>5.3.2 通知(notify)</h4><p>用户支付后就等着通知了，按道理应该在TRADE_SUCCESS时处理用户支付成功的逻辑，但我实际测试发现至发送了TRADE_FINISHED事件来，所以干脆两个一并处理了，反正只会有一次成功。</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">xmlreader = <span class="built_in">require</span> <span class="string">'xmlreader'</span>rr,updateResult?.affectedRows <span class="keyword">is</span> <span class="number">1</span></div><div class="line">demo.onNotify = <span class="function"><span class="params">(req,callback)</span> -&gt;</span></div><div class="line">	xmlreader.read req.notify_data,<span class="function"><span class="params">(err,xdoc)</span> -&gt;</span></div><div class="line">		<span class="keyword">return</span> done err <span class="keyword">if</span> err</div><div class="line">		notify = xdoc.notify</div><div class="line">		notify_id = notify?.notify_id?.text()</div><div class="line">		<span class="keyword">return</span> done <span class="string">'bad notify_data'</span> <span class="keyword">unless</span> notify_id</div><div class="line"><span class="function">		<span class="title">done</span> = <span class="params">(response)</span> -&gt;</span></div><div class="line">			<span class="keyword">unless</span> <span class="string">'string'</span> <span class="keyword">is</span> <span class="keyword">typeof</span> response</div><div class="line">				<span class="built_in">console</span>.error <span class="string">"response notify error: "</span> + (response?.stack ? response ? <span class="string">''</span>)</div><div class="line">				response = <span class="string">'server error'</span></div><div class="line">			<span class="built_in">console</span>.error <span class="string">"response notify: <span class="subst">#&#123;response&#125;</span>"</span> <span class="keyword">unless</span> response <span class="keyword">is</span> <span class="string">'success'</span></div><div class="line">			storeNotifyResponse notify_id,response, <span class="function"><span class="params">(err)</span> -&gt;</span></div><div class="line">				callback <span class="keyword">if</span> response <span class="keyword">is</span> <span class="string">'success'</span> <span class="keyword">then</span> err <span class="keyword">else</span> response</div><div class="line">		storeNotifyDetails notify_id, notify, req, <span class="function"><span class="params">(err,success)</span> -&gt;</span></div><div class="line">			<span class="keyword">return</span> done err <span class="keyword">if</span> err</div><div class="line">			<span class="keyword">unless</span> success</div><div class="line">				<span class="keyword">return</span> done <span class="string">"store detail error"</span></div><div class="line">			trade_status = notify.trade_status.text()</div><div class="line">			<span class="keyword">if</span> trade_status <span class="keyword">is</span> <span class="string">'TRADE_FINISHED'</span> <span class="keyword">or</span> trade_status <span class="keyword">is</span> <span class="string">'TRADE_SUCCESS'</span></div><div class="line">				<span class="keyword">unless</span> req.sign <span class="keyword">is</span> api.getNotitySign req</div><div class="line">					<span class="keyword">return</span> done <span class="string">'bad sign'</span></div><div class="line">				out_trade_no = notify.out_trade_no.text()</div><div class="line">				getTradeUser out_trade_no,<span class="function"><span class="params">(err,user)</span> -&gt;</span></div><div class="line">					<span class="keyword">return</span> done err <span class="keyword">if</span> err</div><div class="line">					user_id = user?.user</div><div class="line">					<span class="keyword">return</span> done <span class="string">'unknown user'</span> <span class="keyword">unless</span> user_id</div><div class="line">					onPayed user_id,<span class="function"><span class="params">(err,success)</span> -&gt;</span></div><div class="line">						<span class="keyword">return</span> done err <span class="keyword">if</span> err</div><div class="line">						<span class="keyword">return</span> done <span class="string">"onPayed error"</span> <span class="keyword">unless</span> success</div><div class="line">						storeTradeFinalState out_trade_no, <span class="literal">no</span>, <span class="built_in">console</span>.error</div><div class="line">						done <span class="string">'success'</span></div><div class="line">			<span class="keyword">else</span> <span class="comment"># TRADE_PENDING, TRADE_CLOSED, WAIT_BUYER_PAY, etc </span></div><div class="line">				<span class="keyword">return</span> done <span class="string">'unknown trade status'</span></div></pre></td></tr></table></figure>
+<p>跟存储相关的几个方法如下：</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="title">storeTradeFinalState</span> = <span class="params">(tradeId,isError,callback)</span> -&gt;</span></div><div class="line">	state = <span class="keyword">if</span> isError <span class="keyword">then</span> <span class="string">'FAILURE'</span> <span class="keyword">else</span> <span class="string">'SUCCESS'</span></div><div class="line">	sql = <span class="string">"update alipay_trades set state=?,close_time=now() where id = ?"</span></div><div class="line">	args = [state,tradeId]</div><div class="line">	db.queryAll sql,args,<span class="function"><span class="params">(err,updateResult)</span> -&gt;</span></div><div class="line">		callback err,updateResult?.affectedRows <span class="keyword">is</span> <span class="number">1</span></div><div class="line"><span class="function"></span></div><div class="line"><span class="title">getTradeUser</span> = <span class="params">(out_trade_no,callback)</span> -&gt;</div><div class="line">	sql = <span class="string">"select id,user from alipay_trades where id=?"</span></div><div class="line">	db.queryOne sql,[out_trade_no],callback</div><div class="line"><span class="function"></span></div><div class="line"><span class="title">onPayed</span> = <span class="params">(user_id,callback)</span> -&gt;</div><div class="line">	sql = <span class="string">"update users set vip=1 where id=? and vip=0 limit 1"</span></div><div class="line">	db.queryAll sql,[user_id],<span class="function"><span class="params">(err,updateResult)</span> -&gt;</span></div><div class="line">		callback err, updateResult?.affectedRows <span class="keyword">is</span> <span class="number">1</span></div><div class="line"><span class="function"></span></div><div class="line"><span class="title">storeNotifyDetails</span> = <span class="params">(notify_id,notify,raw,callback)</span> -&gt;</div><div class="line">	sql = <span class="string">"insert ignore into alipay_notifies(id,recv_time,subject,trade_no,gmt_create,</span></div><div class="line"> 		quantity,out_trade_no,notify_time,total_fee,buyer_email,trade_status, </div><div class="line">  		gmt_payment,gmt_close,raw) values(?,now(),?,?,?,?,?,?,?,?,?,?,?,? )"</div><div class="line">	args = [</div><div class="line">		notify_id,</div><div class="line">		notify.subject?.text()</div><div class="line">		notify.trade_no?.text()</div><div class="line">		notify.gmt_create?.text()</div><div class="line">		notify.quantity?.text()</div><div class="line">		notify.out_trade_no?.text()</div><div class="line">		notify.notify_time?.text()</div><div class="line">		notify.total_fee?.text()</div><div class="line">		notify.buyer_email?.text()</div><div class="line">		notify.trade_status?.text()</div><div class="line">		notify.gmt_payment?.text()</div><div class="line">		notify.gmt_close?.text()</div><div class="line">		JSON.stringify raw</div><div class="line">	]</div><div class="line">	db.queryAll sql,args,<span class="function"><span class="params">(err,updateResult)</span> -&gt;</span></div><div class="line">		callback err,updateResult?.affectedRows <span class="keyword">is</span> <span class="number">1</span> </div><div class="line"><span class="function"></span></div><div class="line"><span class="title">storeNotifyResponse</span> = <span class="params">(notify_id,response,done)</span> -&gt;</div><div class="line">	sql = <span class="string">"update alipay_notifies set response=? where id=?"</span></div><div class="line">	db.queryAll sql,[response,notify_id],done</div></pre></td></tr></table></figure>
+<h2 id="6-后记"><a href="/2013/支付宝WAP支付接口开发/#6-后记" class="headerlink" title="6. 后记"></a>6. 后记</h2><p>有些公司有自己的支付平台，封装了一层，结果调用流程变成下面这样：</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130728122700.png" alt=""></p>
+<blockquote>
+<p>Alipay WAP using platform pay flow</p>
+<p>Browzer-&gt;+Site: 1. HTTP GET note over Site: 2. create a new trade<br>Site-&gt;-Browzer: 3. trade info Browzer-&gt;+Platform: 4. redirect note<br>over Platform: 5. create a new trade Platform-&gt;+Alipay: 6. create<br>redirect Alipay-&gt;-Platform: 7. Token note over Platform: 8. build auth<br>url Platform-&gt;-Browzer: 9. redirect to auth url Browzer-&gt;Alipay: 10.<br>redirect Alipay-&gt;Browzer: 11. trade info Browzer-&gt;Alipay: 12. auth and<br>pay Alipay-&gt;+Platform: 13. HTTP POST notify Platform-&gt;Site: 14. proxy<br>note over Site: 15. process trade Site-&gt;Platform: 16. reply “success”<br>Platform-&gt;-Alipay: 17. reply “success” Alipay-&gt;Browzer: 18. pay<br>success Browzer-&gt;Site: 19. goto return url</p>
+</blockquote>
+<p>咋一看，挺方便的，Site只需要做个跳转即可，细节都被Platform隐藏起来了，切换不同的支付方式也变得很方便。</p>
+<p>可是，这个平台的接口并不完善，这些数据都是明文并且没有要求Site做签名，于是就有一个风险。跟(2)的流程图对比，可以发现这个流程多了（3,4,14,16）四个步骤。后面两步只是个代理包装，没什么问题，问题在于步骤3和4。</p>
+<p>可以看到，交易细节被放到了重定向url中了，即用户可以得知交易内容并篡改里面的数据。举个例子，假设重定向地址类似这样</p>
+<blockquote>
+<p><a href="http://payment.mysite.com/api/pay?tradeno=10000&amp;rmb=100.00&amp;siteid=1" target="_blank" rel="external">http://payment.mysite.com/api/pay?tradeno=10000&amp;rmb=100.00&amp;siteid=1</a></p>
+</blockquote>
+<p>由于该地址没有验签机制，所以攻击者很容易就可以发现这里面可以随意篡改数据。</p>
+<p>方法1： 将rmb=100.00改成0.01，即将100元的支付变成1分钱，然后支付。结果Site得到通知的时候，就需要额外处理这种支付款项和要求款项不一致的情况。当然最简单就是金额不足就不退款并且支付失败了。假如没做这种判断，那就相当把100元的商品以1分钱卖出去了。</p>
+<p>方法2： 伪造大量tradeno，然后请求，并且不支付款项。由于tradeno要求唯一，并只能使用一次，这样就相当于消耗掉了site的交易ID，并且site对此毫不知情。结果正常用户要购买时，创建的订单号对于site来说是未使用的，但对platform来说已经是使用过了，会返回支付失败。</p>
+<p>要避免这个问题，需要在重定向的地址增加签名，签名异常的请求都抛弃掉。</p>
+<p>（全文完）</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;因项目需要，要增加支付宝手机网站支付功能，找了支付宝的样例代码和接口说明，折腾两天搞定，谨以此文作为这两天摸索的总结。由于公司有自己的支付接口，并不直接使用这个接口，所以晚些时候打算把测试代码整理好放到Github上。&lt;/p&gt;
+&lt;h2 id=&quot;1-开发前准备&quot;&gt;&lt;a hre
+    
+    </summary>
+    
+      <category term="back-end" scheme="http://neutra.github.io/categories/back-end/"/>
+    
+    
+      <category term="支付宝" scheme="http://neutra.github.io/tags/%E6%94%AF%E4%BB%98%E5%AE%9D/"/>
+    
+      <category term="node.js" scheme="http://neutra.github.io/tags/node-js/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>如果把A.new()编译成new A()</title>
+    <link href="http://neutra.github.io/2013/%E5%A6%82%E6%9E%9C%E6%8A%8AA.new()%E7%BC%96%E8%AF%91%E6%88%90new%20A()/"/>
+    <id>http://neutra.github.io/2013/如果把A.new()编译成new A()/</id>
+    <published>2013-06-28T16:00:00.000Z</published>
+    <updated>2016-08-31T03:49:58.384Z</updated>
+    
+    <content type="html"><![CDATA[<p>缘由</p>
+<p>对于初次接触某个第三方库的C#开发者，假如要调用里面一个方法，发现需要一个A类型的实例作为参数，怎么获得这个实例呢?</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629112703.png" alt=""></p>
+<p>我想大多数人会先尝试new A吧:</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629170441.png" alt=""></p>
+<p>如果没有，可能会尝试输入A.看看有没可能的构造方法:</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629113612.png" alt=""></p>
+<p>如果还没有，那一般要通过其他方式获得了（子类、其他方法的返回结果等）。就此打住，因为后面的不在此文讨论范围。</p>
+<p>我就郁闷了，为何要我输入一次new之后发现没有，然后再次输入A.呢？</p>
+<p>我指的是，最好让C#编译器支持这样的语法糖：A.new() 跟new A()等价。</p>
+<h2 id="本文不适合的阅读对象"><a href="/2013/如果把A.new()编译成new A()/#本文不适合的阅读对象" class="headerlink" title="本文不适合的阅读对象"></a>本文不适合的阅读对象</h2><ul>
+<li><p>文档帝：万事必先看文档的人，本文说明的东西与你无关。</p>
+</li>
+<li><p>键盘帝：不使用VS或者类似的智能提示的用户，本文说明的东西对你没什么影响。</p>
+</li>
+</ul>
+<h2 id="好处是什么？"><a href="/2013/如果把A.new()编译成new A()/#好处是什么？" class="headerlink" title="好处是什么？"></a>好处是什么？</h2><ul>
+<li>“你不觉得输入一次new A之后删掉再输入A.这个过程很傻吗？” **</li>
+</ul>
+<p>只需输入A.即可知道是否有构造函数，类似A.create这样的工厂方法，或者像A.instance这样的单例对象，列在一起更方便对比。</p>
+<p>另外一个好处是，A.new 可以通过匹配参数类型来赋值给一个委托实例(Delegate)。</p>
+<h1 id="有什么可能出现的问题"><a href="/2013/如果把A.new()编译成new A()/#有什么可能出现的问题" class="headerlink" title="有什么可能出现的问题?"></a>有什么可能出现的问题?</h1><ul>
+<li>“万一用户想创建一个名为new的方法怎么办？” **<br>毫无疑问，这种方式可能引起误解，以为这是一个静态方法，相当于类空间的命名被污染了。不过这种的说法是不成立的。</li>
+</ul>
+<p>首先，假设A是个类型，当看到A.x()的时候，你觉得这是什么？事实上，你完全不能确定他是啥，可能是一个静态方法，也可能是静态属性，还可能是静态字段。所以，A.new()到底是什么本身就没可误解的地方。</p>
+<p>其次，当用户想定义一个名为new的方法，实际上也是不可行的：</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629131742.png" alt=""></p>
+<p>因为new是个关键字，要作为方法名的话，前面需要加@</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629131946.png" alt=""></p>
+<p>调用时@也是不可省略的</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629132202.png" alt=""></p>
+<p>所以，A.new()本来就是不能编译通过的，跟现有语法体系没有冲突。</p>
+<p>对比起来，C#的自动属性才是真正的“污染类空间命名”，而附加属性也一定程度影响开发者的惯性思维，A.new()比起这些真的是小巫见大巫，语法糖而已。</p>
+<ul>
+<li>“反射的时候，会有问题吗？”<br>我觉得不会，Type.GetMethod的时候，本来就不包含构造函数。抽象类、接口、枚举这些东西，有new没new本身就是规则定好的，跟现有语法不混淆。</li>
+</ul>
+<p>至于各种IDE的智能提示，作为规则支持就是了。</p>
+<ul>
+<li>“假如A的名字好长好长，就没new A()方便”<br>是的，当输入B.f(new空格后，可以看到A在列表里直接选择回车，这样敲的字符数是很少的。所以，new A()的方式完全可以保留。另外，提供一个智能提示，还记得事件绑定的那个snippet吗？</li>
+</ul>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629134400.png" alt=""></p>
+<h2 id="待补充"><a href="/2013/如果把A.new()编译成new A()/#待补充" class="headerlink" title="待补充"></a>待补充</h2><p>到此，我还是没想到把A.new()编译成new A()有什么坏处，关于这个建议如果各位有其他想法，不妨留个言?</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;缘由&lt;/p&gt;
+&lt;p&gt;对于初次接触某个第三方库的C#开发者，假如要调用里面一个方法，发现需要一个A类型的实例作为参数，怎么获得这个实例呢?&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://neutra-blog-images.qiniudn.com/2013062911270
+    
+    </summary>
+    
+      <category term="others" scheme="http://neutra.github.io/categories/others/"/>
+    
+    
+      <category term="c#" scheme="http://neutra.github.io/tags/c/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CoffeeScript实现BF解释器</title>
+    <link href="http://neutra.github.io/2012/CoffeeScript%E5%AE%9E%E7%8E%B0BF%E8%A7%A3%E9%87%8A%E5%99%A8/"/>
+    <id>http://neutra.github.io/2012/CoffeeScript实现BF解释器/</id>
+    <published>2012-07-07T16:00:00.000Z</published>
+    <updated>2016-08-31T03:49:55.013Z</updated>
+    
+    <content type="html"><![CDATA[<p>今天一大早天气很好，翻了几页《Go语言·云动力》，1.5节讲到下面的脑操编程语言</p>
+<blockquote>
+<p>++++++++++[&gt;++++++++++&lt;-]&gt;++++.+.</p>
+</blockquote>
+<p>额，这不是大名鼎鼎的BF么？终于明白上面的”脑操”不是印刷错误，只是这翻译真不给力，感觉用”脑残”会合适点。(PS: 用BF来讲述图灵机似乎不太合适，虽然BF里有存储/跳转/输出，但是缺少了外部输入，唯一的输入就是代码本身。)</p>
+<p>虽然之前知道BF解释器很简单，但毕竟从没亲手写过。闲来O疼便打算写个，练习下CoffeeScript也熟悉下github。还好一个小时就测好了，不到30行。为了行数更少，合并了一些赋值语句，可能是个人水平问题，很难再短了。</p>
+<p>关于BrainFuck的介绍可以查看这个网页，这里就不多说了，实在是，很坑爹。</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">exports.run = <span class="function"><span class="params">(source)</span> -&gt;</span></div><div class="line">  <span class="keyword">throw</span> <span class="keyword">new</span> Error <span class="string">'invalid source'</span> <span class="keyword">unless</span> <span class="keyword">typeof</span>(source) <span class="keyword">is</span> <span class="string">'string'</span></div><div class="line">  <span class="keyword">throw</span> <span class="keyword">new</span> Error <span class="string">"invalid char '<span class="subst">#&#123;m[<span class="number">0</span>]&#125;</span>'"</span> <span class="keyword">if</span> (m=<span class="regexp">/[^+-.&lt;&gt;[\]]/</span>.exec source)?</div><div class="line">  [i,buf,jmp] = [<span class="number">0</span>,[],[]]</div><div class="line">  <span class="keyword">for</span> ch,p <span class="keyword">in</span> source <span class="keyword">when</span> ch <span class="keyword">is</span> <span class="string">'['</span> <span class="keyword">or</span> ch <span class="keyword">is</span> <span class="string">']'</span></div><div class="line">    <span class="keyword">switch</span> ch</div><div class="line">      <span class="keyword">when</span> <span class="string">'['</span> <span class="keyword">then</span> buf[i++]=p</div><div class="line">      <span class="keyword">when</span> <span class="string">']'</span></div><div class="line">        <span class="keyword">if</span> buf[i<span class="number">-1</span>]?</div><div class="line">          jmp[buf[--i]]=p</div><div class="line">          jmp[p]=buf[i]</div><div class="line">          <span class="keyword">delete</span> buf[i]</div><div class="line">        <span class="keyword">else</span></div><div class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> Error <span class="string">"unexpect ']' at pos <span class="subst">#&#123;p&#125;</span>"</span></div><div class="line">  <span class="keyword">unless</span> i <span class="keyword">is</span> <span class="number">0</span></div><div class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> Error <span class="string">"expect ']' to match '[' at pos <span class="subst">#&#123;buf[i<span class="number">-1</span>]&#125;</span>"</span></div><div class="line">  [p,len]=[<span class="number">-1</span>,source.length]</div><div class="line">  <span class="keyword">while</span> ++p&lt;len</div><div class="line">    ch = source[p]</div><div class="line">    <span class="keyword">switch</span> ch</div><div class="line">      <span class="keyword">when</span> <span class="string">'+'</span> <span class="keyword">then</span> buf[i]=(buf[i] ? <span class="number">0</span>)+<span class="number">1</span></div><div class="line">      <span class="keyword">when</span> <span class="string">'-'</span> <span class="keyword">then</span> buf[i]=(buf[i] ? <span class="number">0</span>)<span class="number">-1</span></div><div class="line">      <span class="keyword">when</span> <span class="string">'&gt;'</span> <span class="keyword">then</span> ++i</div><div class="line">      <span class="keyword">when</span> <span class="string">'&lt;'</span> <span class="keyword">then</span> --i</div><div class="line">      <span class="keyword">when</span> <span class="string">'.'</span> <span class="keyword">then</span> process.stdout.write String.fromCharCode buf[i] ? <span class="number">0x30</span></div><div class="line">      <span class="keyword">when</span> <span class="string">'['</span> <span class="keyword">then</span> p=jmp[p] <span class="keyword">if</span> <span class="keyword">not</span> buf[i]? <span class="keyword">or</span> buf[i] <span class="keyword">is</span> <span class="number">0</span></div><div class="line">      <span class="keyword">when</span> <span class="string">']'</span> <span class="keyword">then</span> p=jmp[p] <span class="keyword">if</span> buf[i]? <span class="keyword">and</span> buf[i] <span class="keyword">isnt</span> <span class="number">0</span></div><div class="line"></div><div class="line">exports.run <span class="string">"++++++++++[&gt;++++++++++&lt;-]&gt;++++.+."</span>  <span class="comment"># print "hi"</span></div></pre></td></tr></table></figure>
+<p>然后有个问题：假设已知某种BF解释器对7种指令的时间消耗分别为T1~T7，设计一个算法，计算该解释器输出给定字符串所需的最优源代码（时间消耗最低，代码最少）</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;今天一大早天气很好，翻了几页《Go语言·云动力》，1.5节讲到下面的脑操编程语言&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;++++++++++[&amp;gt;++++++++++&amp;lt;-]&amp;gt;++++.+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;额，这不是大名鼎鼎的BF
+    
+    </summary>
+    
+      <category term="others" scheme="http://neutra.github.io/categories/others/"/>
+    
+    
+      <category term="coffeescript" scheme="http://neutra.github.io/tags/coffeescript/"/>
+    
+  </entry>
+  
+</feed>

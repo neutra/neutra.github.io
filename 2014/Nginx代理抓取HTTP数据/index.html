@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+          <head>
+        <meta charset="utf-8">
+            
+            <title>
+                Nginx代理抓取HTTP数据 | f•ﻌ•l
+            </title>
+            <meta content="width=device-width, initial-scale=1" name="viewport">
+            <meta name="theme-color" content="#4184f3">
+            
+            
+            <link href="/favicon.ico" rel="icon"/>
+            
+
+            <link rel="stylesheet" href="/css/highlight.light.css">
+            <link rel="stylesheet" href="/css/prism-customize.css">
+            <link rel="stylesheet" href="/css/nav-icon.css">
+            <link rel="stylesheet" href="/css/waves.min.css">
+            <link rel="stylesheet" href="/css/jquery.tocify.css">
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/nav-indicator.css">
+            
+  
+
+  
+            </meta>
+        </meta>
+    </head>
+
+    <body>
+        <header>
+            <!-- cover image or sth. -->
+        </header>
+        <div id="main" class="m-scene">
+            
+<div class="nav-wrapper">
+
+    <div class="container">
+        <nav>
+            <div class="logo wave">
+                <a href="/" id="logo">
+                    f•ﻌ•l
+                </a>
+            </div>
+            <div class="nav-toggle-icon" >
+                <div class="material-hamburger">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+            </div>
+            <div class="menu-wrapper">
+                <div class="nav-indicator">
+                </div>
+                <ul class="menus">
+                    
+                     
+                        <li>
+                            <a class="wave " href="/">
+                                首页
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/archives">
+                                归档
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/about">
+                                关于
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave no-smoothstate" href="/atom.xml">
+                                订阅
+                            </a>
+                        </li>
+                     
+                    
+                   
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>
+            <div class="container content">
+                <div class="scene_element scene_element--fadein">
+                    <div class="row">
+    <div class="main">
+        <article>
+          
+          <header class="post-header">
+          
+          </header>
+          <h1 class="post-title">Nginx代理抓取HTTP数据</h1>
+
+          <section class="post-info">
+            <span class="post-date">2014/01/05</span>
+            
+            <span class="post-category">
+                <a class="article-category-link" href="/categories/others/">others</a>
+            </span>
+            
+            
+            <span class="post-tags">
+              <ul class="post-tag-list"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/lua/">lua</a></li><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/nginx/">nginx</a></li></ul>
+            </span>
+            
+          </section>
+
+          <section class="post-content">
+            <p>最近一个项目，要捕捉HTTP请求和响应的数据，由于通讯双方都不好控制，所以打算配个HTTP代理来抓取数据。</p>
+<p>先尝试了nginx和squid，发现两者都无法记录响应内容，这是什么原因？</p>
+<p>仔细想了想，估计是网站上很多静态文件，尺寸大，很多还不是文本，在日志里记录响应内容确实是弊大于利，至于动态页面，在代码层面可以记录更多细节。所以，代理软件的日志里记录响应内容就显得很鸡肋了。</p>
+<p>想到这点，我就没继续尝试其他的代理软件了。时间有限，也没找到专门的工具，所以继续想办法。</p>
+<p>既然默认的日志不记录，要不尝试抓包？</p>
+<p>于是尝试了下tcpdump，可它输出数据太原始，后期处理成本很高。而且我要的是长期稳定的方案，tcpdump更像用于分析网络异常，作为长期方案似乎不合适。</p>
+<p>放弃了tcpdump后，自然就想到用node.js写个小程序做中转。</p>
+<p>只是，使用外部程序的话，中间多一次通讯，便多一层风险。万一程序挂了，那就影响本来的通讯了。所以这种方式暂定为下策，继续寻求其他方案。</p>
+<p>不用外部程序，nginx自带模块又没有直接提供这功能，就试下伟大的LUA了（未婚男程序员的福音）。</p>
+<p>（待续）</p>
+
+          </section>
+        </article>
+        
+
+       
+        <div class="pager">
+          
+            <a class="post-prev pager-item" href="/2016/TextView文字实际高度分析/" >
+              <strong class="article-nav-caption">上一篇</strong>
+              <p class="post-nav-title">TextView文字实际高度分析</p>
+            </a>
+          
+          
+            <a class="post-next pager-item" href="/2013/node.js的同异步调用的转换/">
+              <strong class="article-nav-caption">下一篇</strong>
+              <p class="post-nav-title">node.js的同异步调用的转换</p>
+            </a>
+          
+        </div>
+        
+
+         <!-- comments -->
+        <div class="comment-section">
+  
+    
+
+    <!-- 多说评论框 start -->
+      <div class="ds-thread" data-thread-key="_posts/2014-01-05-Nginx代理抓取HTTP数据.md" data-title="Nginx代理抓取HTTP数据" data-url="http://neutra.github.io/2014/Nginx代理抓取HTTP数据/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+      <script type="text/javascript">
+      var duoshuoQuery = {short_name:"neutra"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+
+  
+
+
+</div>
+
+    </div>
+    
+</div>
+
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+    <p>由<a href="http://hexo.io/" target="_blank">Hexo</a>强力驱动，搭载<a href="https://github.com/wayou/hexo-theme-gstyle">gstyle</a>主题</p>
+    <p>
+        &copy; 2016 neutra
+    </p>
+</footer>
+<script src="/lib/jquery.js"></script>
+<script src="/lib/waves.js"></script>
+<script src="/lib/jquery-ui.js"></script>
+<script src="/lib/jquery.tocify.js"></script>
+<script src="/js/main.js"></script>
+
+    </body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+          <head>
+        <meta charset="utf-8">
+            
+            <title>
+                Ubuntu+Intellij+adb环境问题集锦 | f•ﻌ•l
+            </title>
+            <meta content="width=device-width, initial-scale=1" name="viewport">
+            <meta name="theme-color" content="#4184f3">
+            
+            
+            <link href="/favicon.ico" rel="icon"/>
+            
+
+            <link rel="stylesheet" href="/css/highlight.light.css">
+            <link rel="stylesheet" href="/css/prism-customize.css">
+            <link rel="stylesheet" href="/css/nav-icon.css">
+            <link rel="stylesheet" href="/css/waves.min.css">
+            <link rel="stylesheet" href="/css/jquery.tocify.css">
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/nav-indicator.css">
+            
+  
+
+  
+            </meta>
+        </meta>
+    </head>
+
+    <body>
+        <header>
+            <!-- cover image or sth. -->
+        </header>
+        <div id="main" class="m-scene">
+            
+<div class="nav-wrapper">
+
+    <div class="container">
+        <nav>
+            <div class="logo wave">
+                <a href="/" id="logo">
+                    f•ﻌ•l
+                </a>
+            </div>
+            <div class="nav-toggle-icon" >
+                <div class="material-hamburger">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+            </div>
+            <div class="menu-wrapper">
+                <div class="nav-indicator">
+                </div>
+                <ul class="menus">
+                    
+                     
+                        <li>
+                            <a class="wave " href="/">
+                                首页
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/archives">
+                                归档
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/about">
+                                关于
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave no-smoothstate" href="/atom.xml">
+                                订阅
+                            </a>
+                        </li>
+                     
+                    
+                   
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>
+            <div class="container content">
+                <div class="scene_element scene_element--fadein">
+                    <div class="row">
+    <div class="main">
+        <article>
+          
+          <header class="post-header">
+          
+          </header>
+          <h1 class="post-title">Ubuntu+Intellij+adb环境问题集锦</h1>
+
+          <section class="post-info">
+            <span class="post-date">2013/11/02</span>
+            
+            <span class="post-category">
+                <a class="article-category-link" href="/categories/android/">android</a>
+            </span>
+            
+            
+            <span class="post-tags">
+              <ul class="post-tag-list"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/android/">android</a></li></ul>
+            </span>
+            
+          </section>
+
+          <section class="post-content">
+            <h2 id="Intellij提示device-is-not-available"><a href="/2013/Ubuntu+Intellij+adb环境问题集锦/#Intellij提示device-is-not-available" class="headerlink" title="Intellij提示device is not available"></a>Intellij提示device is not available</h2><p>Intellij在运行android程序时提示错误 Can’t upload file: device is not available.</p>
+<p>在终端，使用 adb devices命令，显示设备状态是正常的(device)</p>
+<p>使用 adb install xxx 或 adb uninstall yyy 都提示Failure</p>
+<p>手机上也是显示已经是调试模式</p>
+<p>解决办法：关掉手机调试模式，再打开。最好再重启下adb</p>
+<h2 id="环境搭建"><a href="/2013/Ubuntu+Intellij+adb环境问题集锦/#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><p>1.安装adb</p>
+<p>2.安装jdk和intellij</p>
+<p>3.把adb的所在目录加到启动PATH</p>
+<h2 id="设备接上后，adb无法识别"><a href="/2013/Ubuntu+Intellij+adb环境问题集锦/#设备接上后，adb无法识别" class="headerlink" title="设备接上后，adb无法识别"></a>设备接上后，adb无法识别</h2><p>首先要确定设备的生产商id(idVendor)和产品id(idProduct)<br>打开终端，连上USB，输入lsusb并回车；断开USB，再次输入lsusb并回车。 对比下两次打印的列表，可以看到区别是类似下面这样一行：</p>
+<p>Bus 001 Device 027: ID 2717:1220</p>
+<p>记下后面两个数字，前面的数字是生产商id而后面的是产品id</p>
+<p>在adb_usb.ini中添加一行，<strong>文件末尾不要加空行</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">vi ~/.android/adb_usb.ini</div><div class="line">0x2717</div></pre></td></tr></table></figure>
+<p>修改udev配置并重启udev和adb</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">sudo chmod 666 /etc/udev/rules/51-android.rules</div><div class="line">sudo vi /etc/udev/rules/51-android.rules</div><div class="line"></div><div class="line">SUBSYSTEM==&quot;usb&quot;, ATTR&#123;idVendor&#125;==&quot;2207&quot;, ATTR&#123;idProduct&#125;==&quot;0010&quot;, MODE=&quot;0666&quot;，OWNER==&quot;&lt;当前用户名&gt;&quot;</div><div class="line"></div><div class="line">sudo service udev restart</div><div class="line"></div><div class="line">sudo chown root:root $ANDROID_SDK/tools/adb</div><div class="line">sudo chmod a+s $ANDROID_SDK/tools/adb</div><div class="line"></div><div class="line">adn kill-server</div><div class="line">adb devices</div></pre></td></tr></table></figure>
+<h2 id="一些奇葩设备ID"><a href="/2013/Ubuntu+Intellij+adb环境问题集锦/#一些奇葩设备ID" class="headerlink" title="一些奇葩设备ID"></a>一些奇葩设备ID</h2><blockquote>
+<p>原道 N70S 2207:0010</p>
+<p>小米 红米 2717:1220</p>
+</blockquote>
+
+          </section>
+        </article>
+        
+
+       
+        <div class="pager">
+          
+            <a class="post-prev pager-item" href="/2013/微信5之后公众帐号不能一键关注的原因/" >
+              <strong class="article-nav-caption">上一篇</strong>
+              <p class="post-nav-title">微信5之后公众帐号不能一键关注的原因</p>
+            </a>
+          
+          
+            <a class="post-next pager-item" href="/2013/Java的Checked异常/">
+              <strong class="article-nav-caption">下一篇</strong>
+              <p class="post-nav-title">Java的Checked异常</p>
+            </a>
+          
+        </div>
+        
+
+         <!-- comments -->
+        <div class="comment-section">
+  
+    
+
+    <!-- 多说评论框 start -->
+      <div class="ds-thread" data-thread-key="_posts/2013-11-02-Ubuntu+Intellij+adb环境问题集锦.md" data-title="Ubuntu+Intellij+adb环境问题集锦" data-url="http://neutra.github.io/2013/Ubuntu+Intellij+adb环境问题集锦/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+      <script type="text/javascript">
+      var duoshuoQuery = {short_name:"neutra"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+
+  
+
+
+</div>
+
+    </div>
+    
+    <aside>
+        <div id="toc">
+        </div>
+    </aside>
+    
+</div>
+
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+    <p>由<a href="http://hexo.io/" target="_blank">Hexo</a>强力驱动，搭载<a href="https://github.com/wayou/hexo-theme-gstyle">gstyle</a>主题</p>
+    <p>
+        &copy; 2016 neutra
+    </p>
+</footer>
+<script src="/lib/jquery.js"></script>
+<script src="/lib/waves.js"></script>
+<script src="/lib/jquery-ui.js"></script>
+<script src="/lib/jquery.tocify.js"></script>
+<script src="/js/main.js"></script>
+
+    </body>
+</html>

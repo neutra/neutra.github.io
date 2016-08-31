@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+          <head>
+        <meta charset="utf-8">
+            
+            <title>
+                如果把A.new()编译成new A() | f•ﻌ•l
+            </title>
+            <meta content="width=device-width, initial-scale=1" name="viewport">
+            <meta name="theme-color" content="#4184f3">
+            
+            
+            <link href="/favicon.ico" rel="icon"/>
+            
+
+            <link rel="stylesheet" href="/css/highlight.light.css">
+            <link rel="stylesheet" href="/css/prism-customize.css">
+            <link rel="stylesheet" href="/css/nav-icon.css">
+            <link rel="stylesheet" href="/css/waves.min.css">
+            <link rel="stylesheet" href="/css/jquery.tocify.css">
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/nav-indicator.css">
+            
+  
+
+  
+            </meta>
+        </meta>
+    </head>
+
+    <body>
+        <header>
+            <!-- cover image or sth. -->
+        </header>
+        <div id="main" class="m-scene">
+            
+<div class="nav-wrapper">
+
+    <div class="container">
+        <nav>
+            <div class="logo wave">
+                <a href="/" id="logo">
+                    f•ﻌ•l
+                </a>
+            </div>
+            <div class="nav-toggle-icon" >
+                <div class="material-hamburger">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+            </div>
+            <div class="menu-wrapper">
+                <div class="nav-indicator">
+                </div>
+                <ul class="menus">
+                    
+                     
+                        <li>
+                            <a class="wave " href="/">
+                                首页
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/archives">
+                                归档
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/about">
+                                关于
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave no-smoothstate" href="/atom.xml">
+                                订阅
+                            </a>
+                        </li>
+                     
+                    
+                   
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>
+            <div class="container content">
+                <div class="scene_element scene_element--fadein">
+                    <div class="row">
+    <div class="main">
+        <article>
+          
+          <header class="post-header">
+          
+          </header>
+          <h1 class="post-title">如果把A.new()编译成new A()</h1>
+
+          <section class="post-info">
+            <span class="post-date">2013/06/29</span>
+            
+            <span class="post-category">
+                <a class="article-category-link" href="/categories/others/">others</a>
+            </span>
+            
+            
+            <span class="post-tags">
+              <ul class="post-tag-list"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/c/">c#</a></li></ul>
+            </span>
+            
+          </section>
+
+          <section class="post-content">
+            <p>缘由</p>
+<p>对于初次接触某个第三方库的C#开发者，假如要调用里面一个方法，发现需要一个A类型的实例作为参数，怎么获得这个实例呢?</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629112703.png" alt=""></p>
+<p>我想大多数人会先尝试new A吧:</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629170441.png" alt=""></p>
+<p>如果没有，可能会尝试输入A.看看有没可能的构造方法:</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629113612.png" alt=""></p>
+<p>如果还没有，那一般要通过其他方式获得了（子类、其他方法的返回结果等）。就此打住，因为后面的不在此文讨论范围。</p>
+<p>我就郁闷了，为何要我输入一次new之后发现没有，然后再次输入A.呢？</p>
+<p>我指的是，最好让C#编译器支持这样的语法糖：A.new() 跟new A()等价。</p>
+<h2 id="本文不适合的阅读对象"><a href="/2013/如果把A.new()编译成new A()/#本文不适合的阅读对象" class="headerlink" title="本文不适合的阅读对象"></a>本文不适合的阅读对象</h2><ul>
+<li><p>文档帝：万事必先看文档的人，本文说明的东西与你无关。</p>
+</li>
+<li><p>键盘帝：不使用VS或者类似的智能提示的用户，本文说明的东西对你没什么影响。</p>
+</li>
+</ul>
+<h2 id="好处是什么？"><a href="/2013/如果把A.new()编译成new A()/#好处是什么？" class="headerlink" title="好处是什么？"></a>好处是什么？</h2><ul>
+<li>“你不觉得输入一次new A之后删掉再输入A.这个过程很傻吗？” **</li>
+</ul>
+<p>只需输入A.即可知道是否有构造函数，类似A.create这样的工厂方法，或者像A.instance这样的单例对象，列在一起更方便对比。</p>
+<p>另外一个好处是，A.new 可以通过匹配参数类型来赋值给一个委托实例(Delegate)。</p>
+<h1 id="有什么可能出现的问题"><a href="/2013/如果把A.new()编译成new A()/#有什么可能出现的问题" class="headerlink" title="有什么可能出现的问题?"></a>有什么可能出现的问题?</h1><ul>
+<li>“万一用户想创建一个名为new的方法怎么办？” **<br>毫无疑问，这种方式可能引起误解，以为这是一个静态方法，相当于类空间的命名被污染了。不过这种的说法是不成立的。</li>
+</ul>
+<p>首先，假设A是个类型，当看到A.x()的时候，你觉得这是什么？事实上，你完全不能确定他是啥，可能是一个静态方法，也可能是静态属性，还可能是静态字段。所以，A.new()到底是什么本身就没可误解的地方。</p>
+<p>其次，当用户想定义一个名为new的方法，实际上也是不可行的：</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629131742.png" alt=""></p>
+<p>因为new是个关键字，要作为方法名的话，前面需要加@</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629131946.png" alt=""></p>
+<p>调用时@也是不可省略的</p>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629132202.png" alt=""></p>
+<p>所以，A.new()本来就是不能编译通过的，跟现有语法体系没有冲突。</p>
+<p>对比起来，C#的自动属性才是真正的“污染类空间命名”，而附加属性也一定程度影响开发者的惯性思维，A.new()比起这些真的是小巫见大巫，语法糖而已。</p>
+<ul>
+<li>“反射的时候，会有问题吗？”<br>我觉得不会，Type.GetMethod的时候，本来就不包含构造函数。抽象类、接口、枚举这些东西，有new没new本身就是规则定好的，跟现有语法不混淆。</li>
+</ul>
+<p>至于各种IDE的智能提示，作为规则支持就是了。</p>
+<ul>
+<li>“假如A的名字好长好长，就没new A()方便”<br>是的，当输入B.f(new空格后，可以看到A在列表里直接选择回车，这样敲的字符数是很少的。所以，new A()的方式完全可以保留。另外，提供一个智能提示，还记得事件绑定的那个snippet吗？</li>
+</ul>
+<p><img src="http://neutra-blog-images.qiniudn.com/20130629134400.png" alt=""></p>
+<h2 id="待补充"><a href="/2013/如果把A.new()编译成new A()/#待补充" class="headerlink" title="待补充"></a>待补充</h2><p>到此，我还是没想到把A.new()编译成new A()有什么坏处，关于这个建议如果各位有其他想法，不妨留个言?</p>
+
+          </section>
+        </article>
+        
+
+       
+        <div class="pager">
+          
+            <a class="post-prev pager-item" href="/2013/支付宝WAP支付接口开发/" >
+              <strong class="article-nav-caption">上一篇</strong>
+              <p class="post-nav-title">支付宝WAP支付接口开发</p>
+            </a>
+          
+          
+            <a class="post-next pager-item" href="/2012/CoffeeScript实现BF解释器/">
+              <strong class="article-nav-caption">下一篇</strong>
+              <p class="post-nav-title">CoffeeScript实现BF解释器</p>
+            </a>
+          
+        </div>
+        
+
+         <!-- comments -->
+        <div class="comment-section">
+  
+    
+
+    <!-- 多说评论框 start -->
+      <div class="ds-thread" data-thread-key="_posts/2013-06-29-如果把A.new()编译成new A().md" data-title="如果把A.new()编译成new A()" data-url="http://neutra.github.io/2013/如果把A.new()编译成new A()/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+      <script type="text/javascript">
+      var duoshuoQuery = {short_name:"neutra"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+
+  
+
+
+</div>
+
+    </div>
+    
+    <aside>
+        <div id="toc">
+        </div>
+    </aside>
+    
+</div>
+
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+    <p>由<a href="http://hexo.io/" target="_blank">Hexo</a>强力驱动，搭载<a href="https://github.com/wayou/hexo-theme-gstyle">gstyle</a>主题</p>
+    <p>
+        &copy; 2016 neutra
+    </p>
+</footer>
+<script src="/lib/jquery.js"></script>
+<script src="/lib/waves.js"></script>
+<script src="/lib/jquery-ui.js"></script>
+<script src="/lib/jquery.tocify.js"></script>
+<script src="/js/main.js"></script>
+
+    </body>
+</html>

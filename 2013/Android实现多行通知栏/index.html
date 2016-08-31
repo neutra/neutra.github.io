@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+          <head>
+        <meta charset="utf-8">
+            
+            <title>
+                Android实现多行通知栏 | f•ﻌ•l
+            </title>
+            <meta content="width=device-width, initial-scale=1" name="viewport">
+            <meta name="theme-color" content="#4184f3">
+            
+            
+            <link href="/favicon.ico" rel="icon"/>
+            
+
+            <link rel="stylesheet" href="/css/highlight.light.css">
+            <link rel="stylesheet" href="/css/prism-customize.css">
+            <link rel="stylesheet" href="/css/nav-icon.css">
+            <link rel="stylesheet" href="/css/waves.min.css">
+            <link rel="stylesheet" href="/css/jquery.tocify.css">
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/nav-indicator.css">
+            
+  
+
+  
+            </meta>
+        </meta>
+    </head>
+
+    <body>
+        <header>
+            <!-- cover image or sth. -->
+        </header>
+        <div id="main" class="m-scene">
+            
+<div class="nav-wrapper">
+
+    <div class="container">
+        <nav>
+            <div class="logo wave">
+                <a href="/" id="logo">
+                    f•ﻌ•l
+                </a>
+            </div>
+            <div class="nav-toggle-icon" >
+                <div class="material-hamburger">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+            </div>
+            <div class="menu-wrapper">
+                <div class="nav-indicator">
+                </div>
+                <ul class="menus">
+                    
+                     
+                        <li>
+                            <a class="wave " href="/">
+                                首页
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/archives">
+                                归档
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/about">
+                                关于
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave no-smoothstate" href="/atom.xml">
+                                订阅
+                            </a>
+                        </li>
+                     
+                    
+                   
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>
+            <div class="container content">
+                <div class="scene_element scene_element--fadein">
+                    <div class="row">
+    <div class="main">
+        <article>
+          
+          <header class="post-header">
+          
+          </header>
+          <h1 class="post-title">Android实现多行通知栏</h1>
+
+          <section class="post-info">
+            <span class="post-date">2013/07/31</span>
+            
+            <span class="post-category">
+                <a class="article-category-link" href="/categories/android/">android</a>
+            </span>
+            
+            
+            <span class="post-tags">
+              <ul class="post-tag-list"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/android/">android</a></li></ul>
+            </span>
+            
+          </section>
+
+          <section class="post-content">
+            <p>Android 2.3开始可以通过设置contentView自定义通知栏的布局，但高度却无法改变。</p>
+<p>从4.1开始，Android提供了bigContentView，可以自定义通知栏的高度，并提供了InboxStyle、BigTextStyle、BigPictureStyle三种样式。</p>
+<p>要实现多行内容的通知，可以使用BigTextStyle，代码很简单：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line">* 弹出通知</div><div class="line">* <span class="doctag">@param</span> context 上下文</div><div class="line">* <span class="doctag">@param</span> id 通知ID</div><div class="line">* <span class="doctag">@param</span> icon 图标</div><div class="line">* <span class="doctag">@param</span> text 状态栏文字</div><div class="line">* <span class="doctag">@param</span> title 通知栏标题</div><div class="line">* <span class="doctag">@param</span> content 通知栏内容</div><div class="line">* <span class="doctag">@param</span> intent</div><div class="line">*/</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">notify</span><span class="params">(Context context, <span class="keyword">int</span> id, <span class="keyword">int</span> icon, String text,</span></span></div><div class="line">			String title, String content, Intent intent) &#123;</div><div class="line">	<span class="keyword">long</span> when = System.currentTimeMillis();</div><div class="line">	PendingIntent pendingIntent = PendingIntent.getActivity(context, id, intent, PendingIntent.FLAG_CANCEL_CURRENT);</div><div class="line">	Notification notification;</div><div class="line">	<span class="keyword">final</span> <span class="keyword">int</span> sdk = android.os.Build.VERSION.SDK_INT;</div><div class="line">	<span class="keyword">if</span> (sdk &lt; android.os.Build.VERSION_CODES.JELLY_BEAN) &#123;</div><div class="line">		notification = <span class="keyword">new</span> Notification(icon, text, when);</div><div class="line">		notification.setLatestEventInfo(context, title, content, pendingIntent);</div><div class="line">		notification.flags = Notification.FLAG_AUTO_CANCEL;</div><div class="line">	&#125;<span class="keyword">else</span>&#123;</div><div class="line">		Notification.Builder builder = <span class="keyword">new</span> Notification.Builder(context)</div><div class="line">				.setWhen(when)</div><div class="line">				.setSmallIcon(icon)</div><div class="line">				.setTicker(text)</div><div class="line">				.setContentTitle(title)</div><div class="line">				.setContentIntent(pendingIntent)</div><div class="line">				.setPriority(Notification.PRIORITY_HIGH)</div><div class="line">				.setAutoCancel(<span class="keyword">true</span>);</div><div class="line">		notification = <span class="keyword">new</span> Notification.BigTextStyle( builder )</div><div class="line">				.bigText(content)</div><div class="line">				.build();</div><div class="line">	&#125;</div><div class="line">	((NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE))</div><div class="line">			.notify(id, notification);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+
+          </section>
+        </article>
+        
+
+       
+        <div class="pager">
+          
+            <a class="post-prev pager-item" href="/2013/请不要让程序员去琢磨设计师的意图/" >
+              <strong class="article-nav-caption">上一篇</strong>
+              <p class="post-nav-title">请不要让程序员去琢磨设计师的意图</p>
+            </a>
+          
+          
+            <a class="post-next pager-item" href="/2013/赋值表达式的值/">
+              <strong class="article-nav-caption">下一篇</strong>
+              <p class="post-nav-title">赋值表达式的值</p>
+            </a>
+          
+        </div>
+        
+
+         <!-- comments -->
+        <div class="comment-section">
+  
+    
+
+    <!-- 多说评论框 start -->
+      <div class="ds-thread" data-thread-key="_posts/2013-07-31-Android实现多行通知栏.md" data-title="Android实现多行通知栏" data-url="http://neutra.github.io/2013/Android实现多行通知栏/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+      <script type="text/javascript">
+      var duoshuoQuery = {short_name:"neutra"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+
+  
+
+
+</div>
+
+    </div>
+    
+</div>
+
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+    <p>由<a href="http://hexo.io/" target="_blank">Hexo</a>强力驱动，搭载<a href="https://github.com/wayou/hexo-theme-gstyle">gstyle</a>主题</p>
+    <p>
+        &copy; 2016 neutra
+    </p>
+</footer>
+<script src="/lib/jquery.js"></script>
+<script src="/lib/waves.js"></script>
+<script src="/lib/jquery-ui.js"></script>
+<script src="/lib/jquery.tocify.js"></script>
+<script src="/js/main.js"></script>
+
+    </body>
+</html>

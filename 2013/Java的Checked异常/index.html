@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+          <head>
+        <meta charset="utf-8">
+            
+            <title>
+                Java的Checked异常 | f•ﻌ•l
+            </title>
+            <meta content="width=device-width, initial-scale=1" name="viewport">
+            <meta name="theme-color" content="#4184f3">
+            
+            
+            <link href="/favicon.ico" rel="icon"/>
+            
+
+            <link rel="stylesheet" href="/css/highlight.light.css">
+            <link rel="stylesheet" href="/css/prism-customize.css">
+            <link rel="stylesheet" href="/css/nav-icon.css">
+            <link rel="stylesheet" href="/css/waves.min.css">
+            <link rel="stylesheet" href="/css/jquery.tocify.css">
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/nav-indicator.css">
+            
+  
+
+  
+            </meta>
+        </meta>
+    </head>
+
+    <body>
+        <header>
+            <!-- cover image or sth. -->
+        </header>
+        <div id="main" class="m-scene">
+            
+<div class="nav-wrapper">
+
+    <div class="container">
+        <nav>
+            <div class="logo wave">
+                <a href="/" id="logo">
+                    f•ﻌ•l
+                </a>
+            </div>
+            <div class="nav-toggle-icon" >
+                <div class="material-hamburger">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+            </div>
+            <div class="menu-wrapper">
+                <div class="nav-indicator">
+                </div>
+                <ul class="menus">
+                    
+                     
+                        <li>
+                            <a class="wave " href="/">
+                                首页
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/archives">
+                                归档
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/about">
+                                关于
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave no-smoothstate" href="/atom.xml">
+                                订阅
+                            </a>
+                        </li>
+                     
+                    
+                   
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>
+            <div class="container content">
+                <div class="scene_element scene_element--fadein">
+                    <div class="row">
+    <div class="main">
+        <article>
+          
+          <header class="post-header">
+          
+          </header>
+          <h1 class="post-title">Java的Checked异常</h1>
+
+          <section class="post-info">
+            <span class="post-date">2013/09/08</span>
+            
+            <span class="post-category">
+                <a class="article-category-link" href="/categories/others/">others</a>
+            </span>
+            
+            
+            <span class="post-tags">
+              <ul class="post-tag-list"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/java/">java</a></li></ul>
+            </span>
+            
+          </section>
+
+          <section class="post-content">
+            <p>Java里的异常分为Checked和Unchecked两类，其中RuntimeException及其派生类被称为Unchecked异常，其余则是Checked异常。</p>
+<blockquote>
+<p>+- Throwable   // 可以被throw/catch<br>|+- Error      // 通常表示错误，跟Unchecked异常差不多<br>|+- Exception  // Checked异常<br>||+- RuntimeException // Unchecked异常</p>
+</blockquote>
+<p>编译器会检查所有抛出的的Checked异常都有被显式处理（throws也算显式处理）。</p>
+<h2 id="示例"><a href="/2013/Java的Checked异常/#示例" class="headerlink" title="示例"></a>示例</h2><p>对于Unchecked异常，使用上跟C#的异常没什么两样：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UncheckedException</span> <span class="keyword">extends</span> <span class="title">RuntimeException</span></span>&#123;&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span></span>&#123;</div><div class="line">	<span class="keyword">if</span>( x &lt;= <span class="number">0</span>)&#123;</div><div class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> UncheckedException();</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>而对于Checked异常，如果像上面那样写的话，编译会失败，提示”Unhandled Exception: CheckedException”：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">CheckedException</span> <span class="keyword">extends</span> <span class="title">Exception</span></span>&#123;&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span></span>&#123;</div><div class="line">	<span class="keyword">if</span>( x &lt;= <span class="number">0</span>)&#123;</div><div class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> CheckedException(); <span class="comment">// Error</span></div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>要通过编译，可以加上try/catch处理掉这个异常：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span></span>&#123;</div><div class="line">	<span class="keyword">try</span>&#123;</div><div class="line">		<span class="keyword">if</span>( x &lt;= <span class="number">0</span>)&#123;</div><div class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> CheckedException();</div><div class="line">		&#125;</div><div class="line">	<span class="keyword">catch</span>(CheckedException e)&#123;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>也可以在方法后声明throws：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span> <span class="keyword">throws</span> CheckedException</span>&#123;</div><div class="line">	<span class="keyword">if</span>( x &lt;= <span class="number">0</span>)&#123;</div><div class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> CheckedException();</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>不过这样的话，调用Run()的方法也必须处理这个异常了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run2</span><span class="params">()</span></span>&#123;</div><div class="line">	<span class="keyword">try</span>&#123;</div><div class="line">		Run();</div><div class="line">	<span class="keyword">catch</span>(CheckedException e)&#123;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run3</span><span class="params">()</span> <span class="keyword">throws</span> CheckedException</span>&#123;</div><div class="line">	Run();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="throws是方法签名一部分吗"><a href="/2013/Java的Checked异常/#throws是方法签名一部分吗" class="headerlink" title="throws是方法签名一部分吗?"></a>throws是方法签名一部分吗?</h2><p>throws和返回类型都是方法的元数据，自然也是方法签名的一部分：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">interface</span> <span class="title">I</span> </span>&#123;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>因为方法可以重载，所以我们可以写出同样的名字但参数不同的方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>&#123;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> x)</span></span>&#123;&#125;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(String x)</span></span>&#123;&#125; <span class="comment">// OK</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>返回类型不同则会编译错误，因为编译器将不知道要调用哪个:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>&#123;</div><div class="line">	<span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span></span>&#123;<span class="keyword">return</span> <span class="number">0</span>;&#125;</div><div class="line">	<span class="function">String <span class="title">f</span><span class="params">()</span></span>&#123;<span class="keyword">return</span> <span class="string">""</span>;&#125; <span class="comment">// Error: f() is already defined in A</span></div><div class="line">&#125;</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span></span>&#123;</div><div class="line">	<span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> x)</span></span>&#123;<span class="keyword">return</span> <span class="number">0</span>;&#125;</div><div class="line">	<span class="function">String <span class="title">f</span><span class="params">(String x)</span></span>&#123;<span class="keyword">return</span> <span class="string">""</span>;&#125; <span class="comment">// OK</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>throws与返回类型类似：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>&#123;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;&#125;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">()</span> <span class="keyword">throws</span> RuntimeException</span>&#123;&#125; <span class="comment">// Error: f() is already defined in A</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span></span>&#123;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> x)</span></span>&#123;&#125;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(String x)</span> <span class="keyword">throws</span> Exception</span>&#123;&#125; <span class="comment">// OK</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>可以这么认为：<strong> 方法名和参数类型确定要调用哪个方法，返回类型跟throws对调用者产生约束。 </strong></p>
+<h2 id="Checked异常带来的问题"><a href="/2013/Java的Checked异常/#Checked异常带来的问题" class="headerlink" title="Checked异常带来的问题"></a>Checked异常带来的问题</h2><p>假如原先有这么段代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NoPowerException</span> <span class="keyword">extends</span> <span class="title">Exception</span> </span>&#123;&#125;</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Car</span></span>&#123;</div><div class="line">	<span class="keyword">private</span> <span class="keyword">int</span> power = <span class="number">0</span>;</div><div class="line"></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span> <span class="keyword">throws</span> NoPowerException</span>&#123;</div><div class="line">		<span class="keyword">if</span>(power &lt;= <span class="number">0</span>)&#123;</div><div class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> NoPowerException();</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">	    Car car = <span class="keyword">new</span> Car();</div><div class="line">	    <span class="keyword">try</span> &#123;</div><div class="line">		    car.Run();</div><div class="line">	    &#125; <span class="keyword">catch</span> (NoPowerException e) &#123;</div><div class="line">	    &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>后来出现了一种能飞的车，但有重量限制，这时候纠结了……<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TooHeavyException</span> <span class="keyword">extends</span> <span class="title">Exception</span></span>&#123;&#125;</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AirCar</span> <span class="keyword">extends</span> <span class="title">Car</span> </span>&#123;</div><div class="line">	<span class="keyword">private</span> <span class="keyword">int</span> weight = <span class="number">0</span>;</div><div class="line">	<span class="meta">@Override</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span> <span class="keyword">throws</span> NoPowerException </span>&#123;</div><div class="line">		<span class="keyword">if</span>(weight &gt; <span class="number">10</span>)&#123;</div><div class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> TooHeavyException(); <span class="comment">// Unhandled Exception：TooHeavyException </span></div><div class="line">		&#125;</div><div class="line">		<span class="keyword">super</span>.Run();</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">	    Car car = <span class="keyword">new</span> AirCar();</div><div class="line">	    <span class="keyword">try</span> &#123;</div><div class="line">		    car.Run();</div><div class="line">	    &#125; <span class="keyword">catch</span> (NoPowerException e) &#123;</div><div class="line">	    &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<ul>
+<li><p>方法1: 将TooHeavyException改继承自RuntimeException</p>
+<blockquote>
+<p>某一天调用者大呼坑爹：IDE只提示我要处理NoPowerException，这个TooHeavyException哪来的，是愚人节彩蛋吗？</p>
+</blockquote>
+</li>
+<li><p>方法2: Car.Run和AirCar.Run的方法后面都加上TooHeavyException的声明</p>
+<blockquote>
+<p>因为子类而修改父类是大忌，Car本来对TooHeavyException一无所知，加这个声明很难说得通，如果Car这个类是第三方或者JDK里的，这方法就走不通了。</p>
+</blockquote>
+</li>
+<li><p>方法3: 能飞的还叫Car做啥？我们从零开始造AirCar吧~</p>
+<blockquote>
+<p>代价好高……</p>
+</blockquote>
+</li>
+<li><p>方法4: 不叫Run，叫DoRun()吧~</p>
+<blockquote>
+<p>假如Car里面有其他代码调用过Run()方法，那就哭了。这么改下去，代码更难读了……</p>
+</blockquote>
+</li>
+<li><p>方法n: 期待各位补充</p>
+</li>
+</ul>
+<h2 id="小结"><a href="/2013/Java的Checked异常/#小结" class="headerlink" title="小结"></a>小结</h2><p>方法的返回类型和throws都是对调用方的约束，并且这种约束还不能通过继承实现多态的，相比之下，Erlang/Javascript在这方面都没有限制，扩展起来倒是舒服很多。</p>
+
+          </section>
+        </article>
+        
+
+       
+        <div class="pager">
+          
+            <a class="post-prev pager-item" href="/2013/Ubuntu+Intellij+adb环境问题集锦/" >
+              <strong class="article-nav-caption">上一篇</strong>
+              <p class="post-nav-title">Ubuntu+Intellij+adb环境问题集锦</p>
+            </a>
+          
+          
+            <a class="post-next pager-item" href="/2013/请不要让程序员去琢磨设计师的意图/">
+              <strong class="article-nav-caption">下一篇</strong>
+              <p class="post-nav-title">请不要让程序员去琢磨设计师的意图</p>
+            </a>
+          
+        </div>
+        
+
+         <!-- comments -->
+        <div class="comment-section">
+  
+    
+
+    <!-- 多说评论框 start -->
+      <div class="ds-thread" data-thread-key="_posts/2013-09-08-Java的Checked异常.md" data-title="Java的Checked异常" data-url="http://neutra.github.io/2013/Java的Checked异常/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+      <script type="text/javascript">
+      var duoshuoQuery = {short_name:"neutra"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+
+  
+
+
+</div>
+
+    </div>
+    
+    <aside>
+        <div id="toc">
+        </div>
+    </aside>
+    
+</div>
+
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+    <p>由<a href="http://hexo.io/" target="_blank">Hexo</a>强力驱动，搭载<a href="https://github.com/wayou/hexo-theme-gstyle">gstyle</a>主题</p>
+    <p>
+        &copy; 2016 neutra
+    </p>
+</footer>
+<script src="/lib/jquery.js"></script>
+<script src="/lib/waves.js"></script>
+<script src="/lib/jquery-ui.js"></script>
+<script src="/lib/jquery.tocify.js"></script>
+<script src="/js/main.js"></script>
+
+    </body>
+</html>

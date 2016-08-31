@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+          <head>
+        <meta charset="utf-8">
+            
+            <title>
+                TextView文字实际高度分析 | f•ﻌ•l
+            </title>
+            <meta content="width=device-width, initial-scale=1" name="viewport">
+            <meta name="theme-color" content="#4184f3">
+            
+            
+            <link href="/favicon.ico" rel="icon"/>
+            
+
+            <link rel="stylesheet" href="/css/highlight.light.css">
+            <link rel="stylesheet" href="/css/prism-customize.css">
+            <link rel="stylesheet" href="/css/nav-icon.css">
+            <link rel="stylesheet" href="/css/waves.min.css">
+            <link rel="stylesheet" href="/css/jquery.tocify.css">
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/nav-indicator.css">
+            
+  
+
+  
+            </meta>
+        </meta>
+    </head>
+
+    <body>
+        <header>
+            <!-- cover image or sth. -->
+        </header>
+        <div id="main" class="m-scene">
+            
+<div class="nav-wrapper">
+
+    <div class="container">
+        <nav>
+            <div class="logo wave">
+                <a href="/" id="logo">
+                    f•ﻌ•l
+                </a>
+            </div>
+            <div class="nav-toggle-icon" >
+                <div class="material-hamburger">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+            </div>
+            <div class="menu-wrapper">
+                <div class="nav-indicator">
+                </div>
+                <ul class="menus">
+                    
+                     
+                        <li>
+                            <a class="wave " href="/">
+                                首页
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/archives">
+                                归档
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/about">
+                                关于
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave no-smoothstate" href="/atom.xml">
+                                订阅
+                            </a>
+                        </li>
+                     
+                    
+                   
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>
+            <div class="container content">
+                <div class="scene_element scene_element--fadein">
+                    <div class="row">
+    <div class="main">
+        <article>
+          
+          <header class="post-header">
+          
+          </header>
+          <h1 class="post-title">TextView文字实际高度分析</h1>
+
+          <section class="post-info">
+            <span class="post-date">2016/08/31</span>
+            
+            <span class="post-category">
+                <a class="article-category-link" href="/categories/android/">android</a>
+            </span>
+            
+            
+            <span class="post-tags">
+              <ul class="post-tag-list"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/android/">android</a></li><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/字体/">字体</a></li></ul>
+            </span>
+            
+          </section>
+
+          <section class="post-content">
+            <h2 id="问题"><a href="/2016/TextView文字实际高度分析/#问题" class="headerlink" title="问题"></a>问题</h2><p>做Android开发的人都知道怎么设置文字高度：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">TextView</span></span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"wrap_content"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">    <span class="attr">android:includeFontPadding</span>=<span class="string">"false"</span></div><div class="line">    <span class="attr">android:textSize</span>=<span class="string">"20sp"</span></div><div class="line">    <span class="attr">android:text</span>=<span class="string">"Abc"</span> /&gt;</div></pre></td></tr></table></figure>
+<p>可是有多少人注意到，在手机上这个TextView的实际高度是并不是20sp，那实际高度是多少？</p>
+<p>换句话说，<strong>如何使TextView文字的尺寸位置与设计稿精确一致？</strong></p>
+<a id="more"></a>
+<h2 id="分析"><a href="/2016/TextView文字实际高度分析/#分析" class="headerlink" title="分析"></a>分析</h2><p>因手上只有魅蓝Note3(Flyme系统，基于Android 5.1，1090x1920, density=3)，以下分析和结论均在此机子上测试，其他版本的原理都是一样的，区别在于字体文件和配置可能不一样。</p>
+<p><img src="/2016/TextView文字实际高度分析/ttf-metrics.png" alt=""></p>
+<p>(待续)</p>
+<p>分析的过程就是各种查资料各种尝试，很多人其实只需要知道结论就行了，所以先把结论贴出来：</p>
+<h2 id="结论"><a href="/2016/TextView文字实际高度分析/#结论" class="headerlink" title="结论"></a>结论</h2><h3 id="1-中文和英文放在同一个TextView会导致高度改变吗？"><a href="/2016/TextView文字实际高度分析/#1-中文和英文放在同一个TextView会导致高度改变吗？" class="headerlink" title="1. 中文和英文放在同一个TextView会导致高度改变吗？"></a>1. 中文和英文放在同一个TextView会导致高度改变吗？</h3><blockquote>
+<p><strong> NO </strong></p>
+</blockquote>
+<p>density=3屏幕下，”夔Madpx”/“s夔Madpx”/“Madpx”对应尺寸50sp/50dp/150px高度都是202px(includePadding)/176px</p>
+<h3 id="2-WRAP-CONTENT-的TextView的真实高度-与-textSize-是否成正比例？"><a href="/2016/TextView文字实际高度分析/#2-WRAP-CONTENT-的TextView的真实高度-与-textSize-是否成正比例？" class="headerlink" title="2. WRAP_CONTENT 的TextView的真实高度 与 textSize 是否成正比例？"></a>2. WRAP_CONTENT 的TextView的真实高度 与 textSize 是否成正比例？</h3><blockquote>
+<p><strong> YES </strong></p>
+</blockquote>
+<p>无论是否includePadding，无论是否多行</p>
+<h3 id="3-根据-textSize-如何确定单行-WRAP-CONTENT-的TextView的真实高度"><a href="/2016/TextView文字实际高度分析/#3-根据-textSize-如何确定单行-WRAP-CONTENT-的TextView的真实高度" class="headerlink" title="3. 根据 textSize 如何确定单行 WRAP_CONTENT 的TextView的真实高度"></a>3. 根据 textSize 如何确定单行 WRAP_CONTENT 的TextView的真实高度</h3><p>以使用字体的某个高度（如a-z)的高度作为基准，换算出相应的ascent/descent，再根据是否includePadding补充上下空白</p>
+<h3 id="4-includePadding的实际效果"><a href="/2016/TextView文字实际高度分析/#4-includePadding的实际效果" class="headerlink" title="4. includePadding的实际效果?"></a>4. includePadding的实际效果?</h3><p>includePadding对应高度与top/bottom/ascent/descent有关，只影响第一行和最后一行</p>
+<p>以下值基于getPaint().fontMetrics</p>
+<blockquote>
+<p>———— TopPadding    = if includePadding then .top else .ascent<br>———— Ascent        = .ascent<br>– Line1  – Baseline      = 0<br>———— Ascent        = .descent<br>———— Ascent        = .ascent<br>– Line2  – Baseline      = 0<br>———— Ascent        = .descent<br>———— Ascent        = .ascent<br>– Line3  – Baseline      = 0<br>———— Ascent        = .descent<br>———— BottomPadding = if includePadding then .bottom else .descent<br>top = font.props.ymax, bottom = font.props.ymin</p>
+</blockquote>
+<h3 id="5-android中使用的是mac-hhea-的ascender-descender，还是OS-2的winAscent-winDscent，还是TypoAscender-TypoDescender"><a href="/2016/TextView文字实际高度分析/#5-android中使用的是mac-hhea-的ascender-descender，还是OS-2的winAscent-winDscent，还是TypoAscender-TypoDescender" class="headerlink" title="5. android中使用的是mac(hhea)的ascender/descender，还是OS/2的winAscent/winDscent，还是TypoAscender/TypoDescender?"></a>5. android中使用的是mac(hhea)的ascender/descender，还是OS/2的winAscent/winDscent，还是TypoAscender/TypoDescender?</h3><p>从下面实验可以确定android使用的是mac(hhea)对应的ascender/descender</p>
+<ul>
+<li>ascender/descender和winAscent/winDscent一致 字体DroidSansFallback-flyme-stub.ttf</li>
+</ul>
+<blockquote>
+<p>08-23 16:54:53.811 18380-18380/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView3: space=172.851562 top=-121.875000, ascender=-121.875000, descender=18.164062, bottom=18.164062</p>
+</blockquote>
+<ul>
+<li>把ascender/descender修改后的字体DroidSansFallback-flyme-stub-mod-mac.ttf</li>
+</ul>
+<blockquote>
+<p>08-23 16:54:53.812 18380-18380/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView4: space=208.593750 top=-121.875000, ascender=-146.484375, descender=29.296875, bottom=18.164062</p>
+</blockquote>
+<ul>
+<li>把winAscent/winDscent修改后的字体DroidSansFallback-flyme-stub-mod-win.ttf</li>
+</ul>
+<blockquote>
+<p>08-23 16:54:53.812 18380-18380/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView5: space=172.851562 top=-121.875000, ascender=-121.875000, descender=18.164062, bottom=18.164062</p>
+</blockquote>
+<ul>
+<li>把typoAscender/typoDscender修改后的字体DroidSansFallback-flyme-stub-mod-typo.ttf</li>
+</ul>
+<blockquote>
+<p>08-23 17:16:17.150 32053-32053/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView6: space=172.851562 top=-121.875000, ascender=-121.875000, descender=18.164062, bottom=18.164062</p>
+</blockquote>
+<h3 id="6-TextView默认字体是哪个"><a href="/2016/TextView文字实际高度分析/#6-TextView默认字体是哪个" class="headerlink" title="6. TextView默认字体是哪个?"></a>6. TextView默认字体是哪个?</h3><p>Flyme5.1环境下，没有DroidSansFallback.ttf，不是DroidSansFallback-flyme.ttf，默认尺寸与设置了android:typeface=”sans”一致<br>从源代码TypefaceImpl.cpp，可以确认安卓5.1的默认字体是写死在代码里的，位置在/system/fonts/Roboto-Regular.ttf，与system_fonts.xml没什么关系，如果该文件加载异常，则默认字体是一个包含空列表List<font>的FontFamily，会造成什么危害未知<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> *fns[] = &#123;</div><div class="line">    <span class="string">"/system/fonts/Roboto-Regular.ttf"</span>,</div><div class="line">&#125;;</div></pre></td></tr></table></figure></font></p>
+<p>在Flyme5.1环境下，可以确认Roboto-Regular.ttf的fm与默认的fm一致</p>
+<ul>
+<li><p>默认<br>08-23 18:03:39.158 29517-29517/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView1: space=175.781250 top=-159.228516, ascender=-139.160156, descender=36.621094, bottom=41.455078</p>
+</li>
+<li><p>指定Roboto-Regular.ttf字体<br>08-23 18:03:39.161 29517-29517/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView9: space=175.781250 top=-159.228516, ascender=-139.160156, descender=36.621094, bottom=41.455078</p>
+</li>
+</ul>
+<p>估计安卓系统的默认字体会考虑各种字体Fallback情况下，使用默认字体的上下留白依然不会造成截断情况，所以默认字体的上下留白会显得很宽</p>
+<h3 id="7-android的TextView如何渲染文本"><a href="/2016/TextView文字实际高度分析/#7-android的TextView如何渲染文本" class="headerlink" title="7. android的TextView如何渲染文本?"></a>7. android的TextView如何渲染文本?</h3><ol>
+<li>通过Paint的getFontMetrics获取字体尺寸参数，主要逻辑在Paint.cpp和Skia库的SkPaint.cpp；对文本测量，确定分行处和补充</li>
+<li>对文本测量，确定分行处和补充…的位置，创建StaticLayout/DynamicLayout/BoringLayout</li>
+<li>Layout通过Canvas.drawText进行渲染</li>
+</ol>
+<h3 id="8-如果发生Fallback，逻辑怎样"><a href="/2016/TextView文字实际高度分析/#8-如果发生Fallback，逻辑怎样" class="headerlink" title="8. 如果发生Fallback，逻辑怎样?"></a>8. 如果发生Fallback，逻辑怎样?</h3><ul>
+<li>如果当前的字体文件找不到相应的图案，就会根据fonts.xml/fallback_fonts.xml的配置逐个检查直到找到为止(实现代码可能在Typeface/FontLoader)</li>
+<li>如果找到新字体能提供该图案，则根据UPM和TextSize和Baseline确定绘制的位置和尺寸，但不影响TextView的测量高度</li>
+</ul>
+<h3 id="9-如何使TextView的高度“恰好”（几乎）为中文或英文的高度？"><a href="/2016/TextView文字实际高度分析/#9-如何使TextView的高度“恰好”（几乎）为中文或英文的高度？" class="headerlink" title="9. 如何使TextView的高度“恰好”（几乎）为中文或英文的高度？"></a>9. 如何使TextView的高度“恰好”（几乎）为中文或英文的高度？</h3><ol>
+<li><p>可以自定义只包含极少图案的字体，并设置合适的ascender/descender，如上面的DroidSansFallback-flyme-stub-mod-mac.ttf可以做到50dp的字体恰好WRAP_CONTENT的高度也是50dp<br>但这样就要针对特定版本（4.4/5.0/6.0)嵌入不同的字体，并且AOSP/Flyme等各个ROM的默认字体可能不一样</p>
+</li>
+<li><p>待续</p>
+</li>
+</ol>
+<h3 id="10-如何获取textView的fm和文字高度-space-？"><a href="/2016/TextView文字实际高度分析/#10-如何获取textView的fm和文字高度-space-？" class="headerlink" title="10. 如何获取textView的fm和文字高度(space)？"></a>10. 如何获取textView的fm和文字高度(space)？</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">TextPaint paint = textView.getPaint();</div><div class="line">Paint.FontMetrics fm = <span class="keyword">new</span> Paint.FontMetrics();</div><div class="line"><span class="keyword">float</span> space = paint.getFontMetrics(fm);</div></pre></td></tr></table></figure>
+<h3 id="11-SourceHanSansCN-Normal-ttf和NotoSansHans-Regular-otf区别是？"><a href="/2016/TextView文字实际高度分析/#11-SourceHanSansCN-Normal-ttf和NotoSansHans-Regular-otf区别是？" class="headerlink" title="11. SourceHanSansCN-Normal.ttf和NotoSansHans-Regular.otf区别是？"></a>11. SourceHanSansCN-Normal.ttf和NotoSansHans-Regular.otf区别是？</h3><p>从主要属性上来看，几乎没区别(数字差小于1%)，前者字重是Light后者是Normal，但fonts设置的字重两者都是400。</p>
+<p>前者有30888个图案，后者…</p>
+<h3 id="12-假定思源字体fontSize-100-，在不设置typeface-fontfamily的情况下，用的是什么字体？"><a href="/2016/TextView文字实际高度分析/#12-假定思源字体fontSize-100-，在不设置typeface-fontfamily的情况下，用的是什么字体？" class="headerlink" title="12. 假定思源字体fontSize = 100%，在不设置typeface/fontfamily的情况下，用的是什么字体？"></a>12. 假定思源字体fontSize = 100%，在不设置typeface/fontfamily的情况下，用的是什么字体？</h3><p>英文使用Roboto-Regular.ttf绘制，中文会fallback到SourceHanSansCN-Normal.ttf-&gt;NotoSansHans-Regular.otf-&gt;DroidSansFallback(每个ROM可能不一样)</p>
+<h4 id="12-1-单行文字实际占用高度多少"><a href="/2016/TextView文字实际高度分析/#12-1-单行文字实际占用高度多少" class="headerlink" title="12.1 单行文字实际占用高度多少?"></a>12.1 单行文字实际占用高度多少?</h4><p>文字占用高度只跟默认字体有关，UPM=2048</p>
+<ul>
+<li><p>禁止includePadding时, 实际占用高度为(1900 - -500)/2048 = 117.2%</p>
+</li>
+<li><p>开启includePadding时, 实际占用高度为(2174 - -566)/2048 = 133.8%</p>
+</li>
+</ul>
+<h4 id="12-2-开启includePadding时上下各多占多少空白"><a href="/2016/TextView文字实际高度分析/#12-2-开启includePadding时上下各多占多少空白" class="headerlink" title="12.2 开启includePadding时上下各多占多少空白?"></a>12.2 开启includePadding时上下各多占多少空白?</h4><p>上面多(2174-1900)/2048 = 13.4%，下面多(566-500)/2048 = 3.2%</p>
+<h4 id="12-3-单行文字英文dp实际图案高度和上下空白多少"><a href="/2016/TextView文字实际高度分析/#12-3-单行文字英文dp实际图案高度和上下空白多少" class="headerlink" title="12.3 单行文字英文dp实际图案高度和上下空白多少?"></a>12.3 单行文字英文dp实际图案高度和上下空白多少?</h4><p>ymax(d)=1547，ymin(p)=-427<br>实际占用高度为(1547 - -427)/2048 = 96.4%</p>
+<ul>
+<li><p>禁止includePadding时，距离上边界(1900-1547)/2048=17.2%，距离下边界(-427 - -500)/2048=3.6%，如希望垂直方向精确居中，需补偿下边距17.2%-3.6%=13.6%</p>
+</li>
+<li><p>开启includePadding时，距离上边界(2174-1547)/2048=30.6%，距离下边界(-427 - -566)/2048=6.8%，如希望垂直方向精确居中，需补偿下边距30.6%-6.8%=23.8%</p>
+</li>
+</ul>
+<h4 id="12-4-单行文字英文M实际图案高度和上下空白多少"><a href="/2016/TextView文字实际高度分析/#12-4-单行文字英文M实际图案高度和上下空白多少" class="headerlink" title="12.4 单行文字英文M实际图案高度和上下空白多少?"></a>12.4 单行文字英文M实际图案高度和上下空白多少?</h4><p>ymax(M)=1467，ymin(M)=-11<br>实际占用高度为(1467 - -11)/2048 = 72.2%</p>
+<ul>
+<li>禁止includePadding时，距离上边界(1900-1467)/2048=21.1%，距离下边界(-11 - -500)/2048=23.9%，如希望垂直方向精确居中，需补偿上边距23.9-21.1%=2.8%</li>
+<li>开启includePadding时，距离上边界(2174-1467)/2048=34.5%，距离下边界(-11 - -566)/2048=27.1%，如希望垂直方向精确居中，需补偿下边距34.5%-27.1%=7.4%</li>
+</ul>
+<h4 id="12-5-单行文字中文实际图案高度和上下空白多少"><a href="/2016/TextView文字实际高度分析/#12-5-单行文字中文实际图案高度和上下空白多少" class="headerlink" title="12.5 单行文字中文实际图案高度和上下空白多少?"></a>12.5 单行文字中文实际图案高度和上下空白多少?</h4><p>只考虑常用中文情况下，fallback生效的字体是思源字体，因为两者区别极小，所以以SourceHanSansCN-Normal.ttf的值来计算，UPM=1000</p>
+<p>常用中文字符的ymax和ymin都是字符’夔’(\u5914)，ymax(夔)=842，ymin(夔)=-74<br>实际占用高度为(842 - -74)/1000 = 91.6%</p>
+<ul>
+<li>禁止includePadding时，距离上边界1900/2048-842/1000=8.6%，距离下边界-74/1000 - -500/2048=17.0%，如希望垂直方向精确居中，需补偿上边距17.0-8.6%=8.4%</li>
+<li>开启includePadding时，距离上边界2174/2048-842/1000=22.0%，距离下边界-74/1000 - -566/2048=20.2%，如希望垂直方向精确居中，需补偿下边距22.0%-20.2%=1.8%</li>
+</ul>
+<p>所以，如果想指定偏大的高度值让英文垂直居中，禁止includePadding更居中，想让中文垂直居中，开启includePadding更居中</p>
+<h3 id="13-如何测量设计稿的文字尺寸？"><a href="/2016/TextView文字实际高度分析/#13-如何测量设计稿的文字尺寸？" class="headerlink" title="13. 如何测量设计稿的文字尺寸？"></a>13. 如何测量设计稿的文字尺寸？</h3><p>PS上设置的文字尺寸、画图设置的文字尺寸，都跟实际回执的文字高度不一样，没找到规律，想精确还原设计稿，还是直接量取PNG的字符高度较好</p>
+
+          </section>
+        </article>
+        
+
+       
+        <div class="pager">
+          
+          
+            <a class="post-next pager-item" href="/2014/Nginx代理抓取HTTP数据/">
+              <strong class="article-nav-caption">下一篇</strong>
+              <p class="post-nav-title">Nginx代理抓取HTTP数据</p>
+            </a>
+          
+        </div>
+        
+
+         <!-- comments -->
+        <div class="comment-section">
+  
+    
+
+    <!-- 多说评论框 start -->
+      <div class="ds-thread" data-thread-key="_posts/2016-08-31-TextView文字实际高度分析.md" data-title="TextView文字实际高度分析" data-url="http://neutra.github.io/2016/TextView文字实际高度分析/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+      <script type="text/javascript">
+      var duoshuoQuery = {short_name:"neutra"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+
+  
+
+
+</div>
+
+    </div>
+    
+    <aside>
+        <div id="toc">
+        </div>
+    </aside>
+    
+</div>
+
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+    <p>由<a href="http://hexo.io/" target="_blank">Hexo</a>强力驱动，搭载<a href="https://github.com/wayou/hexo-theme-gstyle">gstyle</a>主题</p>
+    <p>
+        &copy; 2016 neutra
+    </p>
+</footer>
+<script src="/lib/jquery.js"></script>
+<script src="/lib/waves.js"></script>
+<script src="/lib/jquery-ui.js"></script>
+<script src="/lib/jquery.tocify.js"></script>
+<script src="/js/main.js"></script>
+
+    </body>
+</html>

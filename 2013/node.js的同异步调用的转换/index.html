@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+          <head>
+        <meta charset="utf-8">
+            
+            <title>
+                node.js的同异步调用的转换 | f•ﻌ•l
+            </title>
+            <meta content="width=device-width, initial-scale=1" name="viewport">
+            <meta name="theme-color" content="#4184f3">
+            
+            
+            <link href="/favicon.ico" rel="icon"/>
+            
+
+            <link rel="stylesheet" href="/css/highlight.light.css">
+            <link rel="stylesheet" href="/css/prism-customize.css">
+            <link rel="stylesheet" href="/css/nav-icon.css">
+            <link rel="stylesheet" href="/css/waves.min.css">
+            <link rel="stylesheet" href="/css/jquery.tocify.css">
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/nav-indicator.css">
+            
+  
+
+  
+            </meta>
+        </meta>
+    </head>
+
+    <body>
+        <header>
+            <!-- cover image or sth. -->
+        </header>
+        <div id="main" class="m-scene">
+            
+<div class="nav-wrapper">
+
+    <div class="container">
+        <nav>
+            <div class="logo wave">
+                <a href="/" id="logo">
+                    f•ﻌ•l
+                </a>
+            </div>
+            <div class="nav-toggle-icon" >
+                <div class="material-hamburger">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+            </div>
+            <div class="menu-wrapper">
+                <div class="nav-indicator">
+                </div>
+                <ul class="menus">
+                    
+                     
+                        <li>
+                            <a class="wave " href="/">
+                                首页
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/archives">
+                                归档
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/about">
+                                关于
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave no-smoothstate" href="/atom.xml">
+                                订阅
+                            </a>
+                        </li>
+                     
+                    
+                   
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>
+            <div class="container content">
+                <div class="scene_element scene_element--fadein">
+                    <div class="row">
+    <div class="main">
+        <article>
+          
+          <header class="post-header">
+          
+          </header>
+          <h1 class="post-title">node.js的同异步调用的转换</h1>
+
+          <section class="post-info">
+            <span class="post-date">2013/11/11</span>
+            
+            <span class="post-category">
+                <a class="article-category-link" href="/categories/others/">others</a>
+            </span>
+            
+            
+            <span class="post-tags">
+              <ul class="post-tag-list"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/node-js/">node.js</a></li><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/异步/">异步</a></li></ul>
+            </span>
+            
+          </section>
+
+          <section class="post-content">
+            <a id="more"></a>
+<p>node.js的同步调用是这样的：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sync</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> x = sync(); </div><div class="line"><span class="built_in">console</span>.log(x);</div></pre></td></tr></table></figure></p>
+<p>而异步调用则是这样的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">function async(callback) &#123;</div><div class="line">	callback(0);</div><div class="line">&#125;</div><div class="line"></div><div class="line">async(function(x)&#123; </div><div class="line">	console.log(x);</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>假如，某个函数本来是异步方式的，某天需求变了，要改成同步方式，很简单：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">async</span>(<span class="params">callback</span>) </span>&#123;</div><div class="line">	callback(sync());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>但是，反过来则很难。因为callback原本并不存在：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sync</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	<span class="comment">//async(callback???);</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>偶然的情况下，发现了一个叫node-fibers的库，看示例代码：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Fiber = <span class="built_in">require</span>(<span class="string">'fibers'</span>);</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sleep</span>(<span class="params">ms</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> fiber = Fiber.current;</div><div class="line">    setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">        fiber.run();</div><div class="line">    &#125;, ms);</div><div class="line">    Fiber.yield();</div><div class="line">&#125;</div><div class="line"></div><div class="line">Fiber(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'wait... '</span> + <span class="keyword">new</span> <span class="built_in">Date</span>);</div><div class="line">    sleep(<span class="number">1000</span>);</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'ok... '</span> + <span class="keyword">new</span> <span class="built_in">Date</span>);</div><div class="line">&#125;).run();</div><div class="line"><span class="built_in">console</span>.log(<span class="string">'back in main'</span>);</div></pre></td></tr></table></figure></p>
+<p>Fiber居然在一个同步的方法调用内部(sleep(ms))，实现了异步调用(setTimeout)，而回调正是Fiber.yield()之后的代码！</p>
+<p>感叹作者神一般的封装之余，瞄了几眼代码，果然，是用了Native code实现的：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * `Fiber.yield()` will halt execution of the current fiber and return control</div><div class="line"> * back to original caller of run(). If an argument is supplied to yield(),</div><div class="line"> * run() will return that value.</div><div class="line"> *</div><div class="line"> * When run() is called again, yield() will return.</div><div class="line"> *</div><div class="line"> * Note that this function is a global to allow for correct garbage</div><div class="line"> * collection. This results in no loss of functionality because it is only</div><div class="line"> * valid to yield from the currently running fiber anyway.</div><div class="line"> *</div><div class="line"> * Note also that `yield` is a reserved word in Javascript. This is normally</div><div class="line"> * not an issue, however some code linters may complain. Rest assured that it</div><div class="line"> * will run fine now and in future versions of Javascript.</div><div class="line"> */</div><div class="line">Fiber.yield = <span class="function"><span class="keyword">function</span>(<span class="params">param</span>) </span>&#123;</div><div class="line">    [native code]</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>node-fibers的实现方式虽然不是很’node’，但它最大的价值，是把node.js的同异步调用的转换，补上了完美的句号。</p>
+
+          </section>
+        </article>
+        
+
+       
+        <div class="pager">
+          
+            <a class="post-prev pager-item" href="/2014/Nginx代理抓取HTTP数据/" >
+              <strong class="article-nav-caption">上一篇</strong>
+              <p class="post-nav-title">Nginx代理抓取HTTP数据</p>
+            </a>
+          
+          
+            <a class="post-next pager-item" href="/2013/新浪微博sdk-android-提示21337的处理方法/">
+              <strong class="article-nav-caption">下一篇</strong>
+              <p class="post-nav-title">新浪微博sdk(android)提示21337的处理方法</p>
+            </a>
+          
+        </div>
+        
+
+         <!-- comments -->
+        <div class="comment-section">
+  
+    
+
+    <!-- 多说评论框 start -->
+      <div class="ds-thread" data-thread-key="_posts/2013-11-11-node.js的同异步调用的转换.md" data-title="node.js的同异步调用的转换" data-url="http://neutra.github.io/2013/node.js的同异步调用的转换/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+      <script type="text/javascript">
+      var duoshuoQuery = {short_name:"neutra"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+
+  
+
+
+</div>
+
+    </div>
+    
+</div>
+
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+    <p>由<a href="http://hexo.io/" target="_blank">Hexo</a>强力驱动，搭载<a href="https://github.com/wayou/hexo-theme-gstyle">gstyle</a>主题</p>
+    <p>
+        &copy; 2016 neutra
+    </p>
+</footer>
+<script src="/lib/jquery.js"></script>
+<script src="/lib/waves.js"></script>
+<script src="/lib/jquery-ui.js"></script>
+<script src="/lib/jquery.tocify.js"></script>
+<script src="/js/main.js"></script>
+
+    </body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+          <head>
+        <meta charset="utf-8">
+            
+            <title>
+                请不要让程序员去琢磨设计师的意图 | f•ﻌ•l
+            </title>
+            <meta content="width=device-width, initial-scale=1" name="viewport">
+            <meta name="theme-color" content="#4184f3">
+            
+            
+            <link href="/favicon.ico" rel="icon"/>
+            
+
+            <link rel="stylesheet" href="/css/highlight.light.css">
+            <link rel="stylesheet" href="/css/prism-customize.css">
+            <link rel="stylesheet" href="/css/nav-icon.css">
+            <link rel="stylesheet" href="/css/waves.min.css">
+            <link rel="stylesheet" href="/css/jquery.tocify.css">
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/nav-indicator.css">
+            
+  
+
+  
+            </meta>
+        </meta>
+    </head>
+
+    <body>
+        <header>
+            <!-- cover image or sth. -->
+        </header>
+        <div id="main" class="m-scene">
+            
+<div class="nav-wrapper">
+
+    <div class="container">
+        <nav>
+            <div class="logo wave">
+                <a href="/" id="logo">
+                    f•ﻌ•l
+                </a>
+            </div>
+            <div class="nav-toggle-icon" >
+                <div class="material-hamburger">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+            </div>
+            <div class="menu-wrapper">
+                <div class="nav-indicator">
+                </div>
+                <ul class="menus">
+                    
+                     
+                        <li>
+                            <a class="wave " href="/">
+                                首页
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/archives">
+                                归档
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/about">
+                                关于
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave no-smoothstate" href="/atom.xml">
+                                订阅
+                            </a>
+                        </li>
+                     
+                    
+                   
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>
+            <div class="container content">
+                <div class="scene_element scene_element--fadein">
+                    <div class="row">
+    <div class="main">
+        <article>
+          
+          <header class="post-header">
+          
+          </header>
+          <h1 class="post-title">请不要让程序员去琢磨设计师的意图</h1>
+
+          <section class="post-info">
+            <span class="post-date">2013/08/10</span>
+            
+            <span class="post-category">
+                <a class="article-category-link" href="/categories/others/">others</a>
+            </span>
+            
+            
+            <span class="post-tags">
+              <ul class="post-tag-list"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/UI/">UI</a></li></ul>
+            </span>
+            
+          </section>
+
+          <section class="post-content">
+            <p>程序员的主要心思应该花在实现预定的需求上，而不是花在猜文艺青年的意图上。程序员大多是屌丝级别的，写完代码还要吃饭休息的，猜不中也没喝咖啡的闲工夫去猜。</p>
+<h2 id="UI-≠-图片"><a href="/2013/请不要让程序员去琢磨设计师的意图/#UI-≠-图片" class="headerlink" title="UI ≠ 图片"></a>UI ≠ 图片</h2><p>UI对应的是 用户交互接口，默认情况下，输出默认界面。这个界面通常就是提供的那张PNG图片。</p>
+<p>但是，大多数情况下一张图片的信息根本不足够。</p>
+<p>以曝工资客户端欢迎页为例，这张图足够简单：</p>
+<p>这是曝工资的欢迎页，这幅图大概是480x800。那么：</p>
+<ol>
+<li><p>对于720x1280的屏幕，或者320x480的屏幕，或者更奇葩的屏幕，显示效果应该怎样？</p>
+<blockquote>
+<p>有N种可能，居中/拉伸/等宽/等高/按某个方向切割/等比缩放到某个轴</p>
+</blockquote>
+</li>
+<li><p>图中明显由3个部分组成：图标、放射背景、文本。那么，不同屏幕尺寸下，这些部分的关系是怎样的？</p>
+<blockquote>
+<p>当然，居中是毫无疑问的。但底部的文字位置怎样？按现有Y轴比例映射，还是底部对齐，还是顶部对齐？行间距字体大小呢？</p>
+</blockquote>
+</li>
+</ol>
+<p>对于各老板而言，他们看到这些图只会说“好看”或者“不好看”。但对于做事的人，还需知道那些附加信息。或许产品经理是技术哥的大佬，但貌似还不是老板，该补充的还是要补充完整才对。</p>
+<p>每个元素的布局总会有理由，但是，假如只提供图片，这些意图就丢失了，极可能偏离设计的意图。当然，一切按个人理解或者默认也是可以做出来的，但最后的结果往往就会变成：设计师跑过来说“当初我不是这样设计的啊”，让一个设计师花了一周时间设计出来的咚咚，结果技术哥按自己理解做了个20%还原，何必呢？</p>
+<h2 id="UI-≠-PSD"><a href="/2013/请不要让程序员去琢磨设计师的意图/#UI-≠-PSD" class="headerlink" title="UI ≠ PSD"></a>UI ≠ PSD</h2><p>PSD一定程度的拟补了上面的问题，并给字体大小、颜色、尺寸等提供了精确的数值，还会提供部分交互的视觉效果（例如鼠标按下颜色会增加哪个覆盖图层等）。相对PNG已经好了不少，但还是存在很多未解决的问题：</p>
+<ol>
+<li><p>缩放和对齐。设计提供过来的PSD都是固定尺寸的，换个尺寸该怎么办，既然没说，那就是天晓得了。按我的观点，凡是没在需求里提及的东西，反馈回来的都不是BUG，而是新需求，两者有不同的处理方式和责任归属。</p>
+</li>
+<li><p>PSD只能描述像点击效果那样的简单效果，对稍复杂的效果无能为力。目前来看，产品提供的原型演示稿是对这个部分的补充，例如向上拖动时下面出现分享栏，向下时隐藏，中间需要什么样的过渡效果等。我不知道做设计的文采怎样，大多时候几个字能表达清楚的，偏偏一个字没提，给张PSD了事。</p>
+</li>
+<li><p>PSD无法描述“主题”。一般来看，做界面总是有一系列的画面，这些画面虽然彼此独立，但存在这大量的相似性，这些统一的风格样式就是主题。PSD可以把一个画面里100个元素的色彩描述的准确无误，但却不会告诉程序员，标题的蓝色和文本链接的蓝色是同一个色彩。第一行和第三行底色是一样的，所有的按钮都对齐到同一条直线…</p>
+</li>
+<li><p>由于缺少主题的表达，所以程序员拿到一个PSD，如果想要“精确重现”PSD提供的效果的话，工作量极度的高。我怎么会知道这个蓝色和那个蓝色是不是一样？我怎么会知道这条边和那条边是对齐的？我怎么知道这个颜色是RGB色彩还是RGBA色彩？我切图应该切里面的小图标然后填充整个按钮，还是应该直接切整个按钮的图片？这一系列的不确定最终导致的就是，花费大量的时间才可以完成一个产品经理眼中“很简单的”一个界面、一天测量了几百次只做了一个简单的界面，我无法判断自己效率高还是效率低。</p>
+</li>
+<li><p>第4点假如细心点花点时间基本是可以搞定的。但假如每次都提供PSD就是噩梦了，这会导致工作量成大幅增加。假设版本1按照PSD1做好了，后来给了版本2的PSD，这时候该怎么办？PSD不会告诉你，哪些是变动过的，所以正规的方式应该是，把所有数值全部重新量一遍，再把变更的东西实现。本来，一句话“我把正文字体从16px改成了14px, 蓝色加了10%透明”就可以描述的变更，偏偏给了个文艺版的PSD来，既影响效率也影响心情。</p>
+</li>
+</ol>
+<h2 id="建议"><a href="/2013/请不要让程序员去琢磨设计师的意图/#建议" class="headerlink" title="建议"></a>建议</h2><p>吐槽后还是要给点建议的，不然就没价值了。</p>
+<ul>
+<li><p>原型稿把效果描述得足够清楚（是清楚而不是详细），尽量当面复述一遍，确保双方理解一致</p>
+</li>
+<li><p>既然没更好的方式，就沿用PSD，但尽量提供每个部件的对齐方式说明。尽量用文字，少做效果图，当文字和效果图不符时，文字描述的优先级高于效果图，不然文字描述就没意义。</p>
+</li>
+<li><p>除PSD外提供界面主题说明，把用到的调色板罗列出来，调色板的优先级比文字和效果图都高</p>
+</li>
+<li><p>除非大幅度界面修改，否则除第一版外，所有界面变更不再提供PSD，所有变更用文字描述，附加PNG用于效果说明</p>
+</li>
+<li><p>还是那个观点，凡是没说明的，出了问题都不是BUG。对这个观点有反对观点的，请参考“凡是法律没说不允许的，都不犯法”。</p>
+</li>
+<li><p>严格限制UI特别是APP客户端的改动频率，不能养成“改个图标而已，花不了多少时间”这种惯性思维。对于ANDROID目前的编译速度，不清楚的可以问问做的人，他们会告诉你，喝杯咖啡上个厕所回来，可能还没编译完。</p>
+</li>
+</ul>
+<p><strong> 大家的时间都很宝贵，做效果图很花时间，猜效果图也很花时间，其实这些时间应该花在更有效的沟通上。 </strong></p>
+
+          </section>
+        </article>
+        
+
+       
+        <div class="pager">
+          
+            <a class="post-prev pager-item" href="/2013/Java的Checked异常/" >
+              <strong class="article-nav-caption">上一篇</strong>
+              <p class="post-nav-title">Java的Checked异常</p>
+            </a>
+          
+          
+            <a class="post-next pager-item" href="/2013/Android实现多行通知栏/">
+              <strong class="article-nav-caption">下一篇</strong>
+              <p class="post-nav-title">Android实现多行通知栏</p>
+            </a>
+          
+        </div>
+        
+
+         <!-- comments -->
+        <div class="comment-section">
+  
+    
+
+    <!-- 多说评论框 start -->
+      <div class="ds-thread" data-thread-key="_posts/2013-08-10-请不要让程序员去琢磨设计师的意图.md" data-title="请不要让程序员去琢磨设计师的意图" data-url="http://neutra.github.io/2013/请不要让程序员去琢磨设计师的意图/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+      <script type="text/javascript">
+      var duoshuoQuery = {short_name:"neutra"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+
+  
+
+
+</div>
+
+    </div>
+    
+    <aside>
+        <div id="toc">
+        </div>
+    </aside>
+    
+</div>
+
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+    <p>由<a href="http://hexo.io/" target="_blank">Hexo</a>强力驱动，搭载<a href="https://github.com/wayou/hexo-theme-gstyle">gstyle</a>主题</p>
+    <p>
+        &copy; 2016 neutra
+    </p>
+</footer>
+<script src="/lib/jquery.js"></script>
+<script src="/lib/waves.js"></script>
+<script src="/lib/jquery-ui.js"></script>
+<script src="/lib/jquery.tocify.js"></script>
+<script src="/js/main.js"></script>
+
+    </body>
+</html>

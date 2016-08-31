@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+          <head>
+        <meta charset="utf-8">
+            
+            <title>
+                赋值表达式的值 | f•ﻌ•l
+            </title>
+            <meta content="width=device-width, initial-scale=1" name="viewport">
+            <meta name="theme-color" content="#4184f3">
+            
+            
+            <link href="/favicon.ico" rel="icon"/>
+            
+
+            <link rel="stylesheet" href="/css/highlight.light.css">
+            <link rel="stylesheet" href="/css/prism-customize.css">
+            <link rel="stylesheet" href="/css/nav-icon.css">
+            <link rel="stylesheet" href="/css/waves.min.css">
+            <link rel="stylesheet" href="/css/jquery.tocify.css">
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/nav-indicator.css">
+            
+  
+
+  
+            </meta>
+        </meta>
+    </head>
+
+    <body>
+        <header>
+            <!-- cover image or sth. -->
+        </header>
+        <div id="main" class="m-scene">
+            
+<div class="nav-wrapper">
+
+    <div class="container">
+        <nav>
+            <div class="logo wave">
+                <a href="/" id="logo">
+                    f•ﻌ•l
+                </a>
+            </div>
+            <div class="nav-toggle-icon" >
+                <div class="material-hamburger">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+            </div>
+            <div class="menu-wrapper">
+                <div class="nav-indicator">
+                </div>
+                <ul class="menus">
+                    
+                     
+                        <li>
+                            <a class="wave " href="/">
+                                首页
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/archives">
+                                归档
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/about">
+                                关于
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave no-smoothstate" href="/atom.xml">
+                                订阅
+                            </a>
+                        </li>
+                     
+                    
+                   
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>
+            <div class="container content">
+                <div class="scene_element scene_element--fadein">
+                    <div class="row">
+    <div class="main">
+        <article>
+          
+          <header class="post-header">
+          
+          </header>
+          <h1 class="post-title">赋值表达式的值</h1>
+
+          <section class="post-info">
+            <span class="post-date">2013/07/06</span>
+            
+            <span class="post-category">
+                <a class="article-category-link" href="/categories/others/">others</a>
+            </span>
+            
+            
+            <span class="post-tags">
+              <ul class="post-tag-list"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/赋值/">赋值</a></li></ul>
+            </span>
+            
+          </section>
+
+          <section class="post-content">
+            <h2 id="coffeescript"><a href="/2013/赋值表达式的值/#coffeescript" class="headerlink" title="coffeescript"></a>coffeescript</h2><p>CoffeeScript有个语法叫解构赋值(Destructuring Assignment)，可以将一个对象的不同成员一次性赋值给多个的变量。官网中给了下面一个例子：<br><figure class="highlight coffee"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">futurists =</div><div class="line">  sculptor: <span class="string">"Umberto Boccioni"</span></div><div class="line">  painter:  <span class="string">"Vladimir Burliuk"</span></div><div class="line">  poet:</div><div class="line">    name:   <span class="string">"F.T. Marinetti"</span></div><div class="line">    address: [</div><div class="line">      <span class="string">"Via Roma 42R"</span></div><div class="line">      <span class="string">"Bellagio, Italy 22021"</span></div><div class="line">    ]</div><div class="line">&#123;poet: &#123;name, address: [street, city]&#125;&#125; = futurists</div><div class="line">alert name + <span class="string">" — "</span> + street</div></pre></td></tr></table></figure></p>
+<p>运行结果自然是 “F.T. Marinetti — Via Roma 42R”，因为coffee将其翻译为下面的JS：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"> <span class="keyword">var</span> city, futurists, name, street, _ref, _ref1;</div><div class="line">futurists = &#123;</div><div class="line">  sculptor: <span class="string">"Umberto Boccioni"</span>,</div><div class="line">  painter: <span class="string">"Vladimir Burliuk"</span>,</div><div class="line">  poet: &#123;</div><div class="line">    name: <span class="string">"F.T. Marinetti"</span>,</div><div class="line">    address: [<span class="string">"Via Roma 42R"</span>, <span class="string">"Bellagio, Italy 22021"</span>]</div><div class="line">  &#125;</div><div class="line">&#125;;</div><div class="line">_ref = futurists.poet, name = _ref.name, (_ref1 = _ref.address, street = _ref1[<span class="number">0</span>], city = _ref1[<span class="number">1</span>]);</div><div class="line">alert(name + <span class="string">" — "</span> + street);</div></pre></td></tr></table></figure></p>
+<p>这个语法跟Erlang的模式匹配有点类似，不同的是，Erlang会严格匹配等号两边，不赋值的要用_作为占位符，否则运行时将抛出异常，而coffee则不会，对于不存在的成员，值为undefined：<br><figure class="highlight coffee"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&#123;poet: &#123;nameX, address: [streetX, city]&#125;&#125; = futurists</div><div class="line"><span class="comment"># nameX = "undefined"</span></div><div class="line"><span class="comment"># streetX = "F.T. Marinetti"</span></div></pre></td></tr></table></figure></p>
+<p>当然，对一个不存在的成员继续解析还是会抛出异常的：<br><figure class="highlight coffee"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&#123;poetX:&#123;a&#125;&#125; = futurists</div><div class="line"><span class="comment"># TypeError: Cannot read property 'a' of undefined</span></div></pre></td></tr></table></figure></p>
+<p>另外，和JS一样，coffee也可以连续赋值:<br><figure class="highlight coffee"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">a=b=<span class="number">100</span></div><div class="line"><span class="comment"># a=100</span></div><div class="line"><span class="comment"># b=100</span></div></pre></td></tr></table></figure></p>
+<p>假如将上面两种语法组合在一起，会怎样呢？就像下面的代码，最终d=?<br><figure class="highlight coffee"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">a=&#123;b:<span class="number">1</span>,c:<span class="number">2</span>,x:<span class="number">3</span>,y:<span class="number">4</span>&#125;</div><div class="line">d=&#123;b,c&#125;=a</div></pre></td></tr></table></figure></p>
+<p>简单分析下： 赋值语句的结合顺序是从右到左，所以d={b,c}=a等价于d=({b,c}=a) 我们还知道，赋值表达式的值是其本身，那么{b,c}=a的值是什么呢，{b,c}还是a? 可以尝试下，coffee会将语句{b,c}=a转成下面的JS：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">b = a.b, c = a.c;</div></pre></td></tr></table></figure></p>
+<p>这样看来，d最终的值会是2，这也太奇怪了吧?</p>
+<p>还是看一下coffee把d={b,c}=a到底翻译成什么吧：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">d = (b = a.b, c = a.c, a);</div></pre></td></tr></table></figure></p>
+<p>结果在意料之内，d的值不是2 结果在意料之外，d的值不是{b,c}</p>
+<p>我一直以为，像{b,c}=a这样的表达式，返回值将会是{b,c}而不是a，然后d={b,c}=a可以按过滤器的方式执行。但是，我错了，{b,c}=a这个表达式的值是a，再写几行代码验证一次：<br><figure class="highlight coffee"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="title">f</span> = <span class="params">(a)</span> -&gt;</span> &#123;b,c&#125;=a</div></pre></td></tr></table></figure></p>
+<p>coffee将上面的代码翻译成<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">f = <span class="function"><span class="keyword">function</span>(<span class="params">a</span>) </span>&#123;</div><div class="line">  <span class="keyword">var</span> b, c;</div><div class="line">  <span class="keyword">return</span> b = a.b, c = a.c, a;</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p>好吧，解析赋值表达式的值确实是等号右边的值。 至于{b,c}=a为何会被译成b = a.b, c = a.c;估计是因为该表达式的值不产生副作用，所以coffee把该表达式的值抛弃了。</p>
+<p>那么，在JS里，普通赋值表达式的值，是不是也是等号右边的值呢？下面的JS语句，result最终应该等于expr1还是expr2呢？<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">result = expr1 = expr2</div></pre></td></tr></table></figure></p>
+<p>乍眼一看，可能会觉得result==expr1且result==expr2，等于哪个都一样。</p>
+<p>是的，在大多情况下，这都是成立的。但是，为什么对于上面的{b,c}=a这类语句，就不一定成立了呢？</p>
+<p>这是因为，不成立的原因是：执行dest = src后，dest 不一定等于 src</p>
+<h2 id="javascript"><a href="/2013/赋值表达式的值/#javascript" class="headerlink" title="javascript"></a>javascript</h2><p>JS中有类似的情形吗？答案当然是肯定的，看下面的JS代码：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> obj, result;</div><div class="line">obj = &#123;&#125;;</div><div class="line"><span class="built_in">Object</span>.defineProperties(obj, &#123;</div><div class="line">  x: &#123;</div><div class="line">    set: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;,</div><div class="line">    get: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">      <span class="keyword">return</span> <span class="number">10</span>;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>将obj.x的读和写分离，就能产生类似的效果。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">obj.x = <span class="number">11</span>;</div><div class="line">result = obj.x;</div><div class="line"><span class="built_in">console</span>.log(result); <span class="comment">// 10</span></div></pre></td></tr></table></figure></p>
+<p>回到正题，继续测试：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">result = obj.x = <span class="number">11</span>;</div><div class="line"><span class="built_in">console</span>.log(result); <span class="comment">// 11</span></div></pre></td></tr></table></figure></p>
+<p>好吧，JS的赋值表达式的值也是等于等号右边的值。 当最右值的读取包含副作用时，会怎样呢？<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> obj, r1, r2, r3;</div><div class="line">obj = &#123;_x:<span class="number">1</span>&#125;;</div><div class="line"><span class="built_in">Object</span>.defineProperties(obj, &#123;</div><div class="line">  x: &#123;</div><div class="line">    set: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;,</div><div class="line">    get: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">      <span class="keyword">return</span> ++_x;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;);</div><div class="line">r1 = r2 = r3 = obj.x</div><div class="line"><span class="built_in">console</span>.log(r1,r2,r3);  <span class="comment">// 2 2 2</span></div></pre></td></tr></table></figure></p>
+<p>嗯…我知道，在get方法包含带副作用的行为是不对的，这段代码只是测试而已~ 结果表明，连续赋值时最右值只计算一次。其实，从AST的执行过程来分析，最右值只计算一次，是合理的。</p>
+<p><a href="http://www.ecma-international.org/ecma-262/5.1/Ecma-262.pdf" target="_blank" rel="external">ECMA文档</a>是这么描述赋值语句的：</p>
+<blockquote>
+<p>11.13.1 Simple Assignment ( = )<br>The production AssignmentExpression : LeftHandSideExpression = AssignmentExpression is evaluated as follows:</p>
+<ol>
+<li>Let lref be the result of evaluating LeftHandSideExpression.</li>
+<li>Let rref be the result of evaluating AssignmentExpression.</li>
+<li>Let rval be GetValue(rref).</li>
+<li>Throw a SyntaxError exception if the following conditions are all true:</li>
+</ol>
+<ul>
+<li>Type(lref) is Reference is true</li>
+<li>IsStrictReference(lref) is true</li>
+<li>Type(GetBase(lref)) is Environment Record</li>
+<li>GetReferencedName(lref) is either “eval” or “arguments”</li>
+</ul>
+<ol>
+<li>Call PutValue(lref, rval).</li>
+<li>Return rval.<br>NOTE When an assignment occurs within strict mode code, its  LeftHandSide must not evaluate to an unresolvable<br>reference. If it does a  ReferenceError exception is thrown upon assignment. The  LeftHandSide also may not be a<br>reference to a data property with the attribute value  {[[Writable]]:false}, to an accessor property with the attribute value<br>{[[Set]]:undefined}, nor to a non-existent property of an object whose [[Extensible]] internal property has the value false. In<br>these cases a TypeError exception is thrown.<br>赋值表达式的返回值是等号右边的值，连续赋值表达式的值自然就是最右值了，而且只会计算一次。</li>
+</ol>
+</blockquote>
+<hr>
+<p>那么，其他语言呢？</p>
+<h2 id="C"><a href="/2013/赋值表达式的值/#C" class="headerlink" title="C#"></a>C#</h2><p>C#也支持连续赋值，再加上坑爹的DateTime.Now，这个问题似乎也会有！ 不过嘛，如果写a=b=DateTime.Now能得到a!=b的概率似乎极小，写个坑爹的get属性吧:<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">class</span> <span class="title">Hole</span></div><div class="line">&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Hole</span>(<span class="params"><span class="keyword">string</span> name,<span class="keyword">int</span> <span class="keyword">value</span></span>)</span></div><div class="line">    &#123;</div><div class="line">        _name = name;</div><div class="line">        _value = <span class="keyword">value</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">string</span> _name;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> _value;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">int</span> Value</div><div class="line">    &#123;</div><div class="line">        <span class="keyword">get</span> &#123; Console.WriteLine(<span class="string">"get &#123;0&#125; &#123;1&#125;"</span>, _name, _value); <span class="keyword">return</span> _value; &#125;</div><div class="line">        <span class="keyword">set</span> &#123; Console.WriteLine(<span class="string">"set &#123;0&#125;=&#123;1&#125;"</span>, _name, <span class="keyword">value</span>); &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span>(<span class="params"><span class="keyword">string</span>[] args</span>)</span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">var</span> a = <span class="keyword">new</span> Hole(<span class="string">"a"</span>, <span class="number">10</span>);</div><div class="line">    <span class="keyword">var</span> b = <span class="keyword">new</span> Hole(<span class="string">"b"</span>, <span class="number">11</span>);</div><div class="line">    <span class="keyword">var</span> c = <span class="keyword">new</span> Hole(<span class="string">"c"</span>, <span class="number">12</span>);</div><div class="line">    <span class="keyword">var</span> d = c.Value = b.Value = a.Value;</div><div class="line">    Console.WriteLine(<span class="string">"d=&#123;0&#125;"</span>,d);</div><div class="line">    <span class="comment">//get a 10</span></div><div class="line">    <span class="comment">//set b=10</span></div><div class="line">    <span class="comment">//set c=10</span></div><div class="line">    <span class="comment">//d=10</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>跟JS类似，C#的连续赋值里，赋值表达式的值也是等号右边的值，最右值也只会计算一次。dynamic呢？也一样。</p>
+<p><a href="http://www.microsoft.com/en-us/download/details.aspx?id=7029" target="_blank" rel="external">C# 4.0语言规范</a> 7.17.1 这么描述赋值表达式：</p>
+<blockquote>
+<p>The result of a simple assignment expression is the value assigned to the left operand. The result has the same type as the left operand and is always classified as a value.</p>
+</blockquote>
+<h2 id="Erlang"><a href="/2013/赋值表达式的值/#Erlang" class="headerlink" title="Erlang"></a>Erlang</h2><p>因为erlang的模式匹配属于严格匹配，左右值必然严格相同，并且变量不可变，似乎不会有上面的歧义。<br><figure class="highlight erlang"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;_,Y&#125;=&#123;X,_&#125;=&#123;a,b&#125;.   <span class="comment">% &#123;a,b&#125;</span></div></pre></td></tr></table></figure></p>
+<p>对于涉及到副作用的代码，像时间戳/随机值，就难说了：<br><figure class="highlight erlang"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">A=B=random:uniform(<span class="number">1234567890</span>).  <span class="comment">% okey</span></div></pre></td></tr></table></figure></p>
+<p>没出现模式匹配错误，说明erlang中最右值也只计算一次。</p>
+<h2 id="原因"><a href="/2013/赋值表达式的值/#原因" class="headerlink" title="原因"></a>原因</h2><p>赋值表达式的值为何总是右值而不是左值？</p>
+<p>我估计，按赋值表达式的语意，等号的左边总是“可写”的，右边总是“可读”的。如果赋值表达式的值是左边的值，那么程序需要重新计算等号左边的值才能返回，这带来两个问题，一是性能，二是左边的对象不一定可读（例如那些可写但不可读的属性）。于是，几乎所有语言都将“所赋的值”作为赋值语句的返回值，所以连续赋值语句的行为总是“计算最右值一次，从右向左赋值多次”。</p>
+<p>但是，对于coffee的解构赋值表达式，情况则有点不同，因为coffee必须将该表达式拆分成两个，当c是一个包含副作用的属性时，a=b=c和b=c;a=c;并不是等价的，所以，对于解构赋值表达式来说，等号右边的表达式实际被求值了多次。</p>
+
+          </section>
+        </article>
+        
+
+       
+        <div class="pager">
+          
+            <a class="post-prev pager-item" href="/2013/Android实现多行通知栏/" >
+              <strong class="article-nav-caption">上一篇</strong>
+              <p class="post-nav-title">Android实现多行通知栏</p>
+            </a>
+          
+          
+            <a class="post-next pager-item" href="/2013/支付宝WAP支付接口开发/">
+              <strong class="article-nav-caption">下一篇</strong>
+              <p class="post-nav-title">支付宝WAP支付接口开发</p>
+            </a>
+          
+        </div>
+        
+
+         <!-- comments -->
+        <div class="comment-section">
+  
+    
+
+    <!-- 多说评论框 start -->
+      <div class="ds-thread" data-thread-key="_posts/2013-07-06-赋值表达式的值.md" data-title="赋值表达式的值" data-url="http://neutra.github.io/2013/赋值表达式的值/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+      <script type="text/javascript">
+      var duoshuoQuery = {short_name:"neutra"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+
+  
+
+
+</div>
+
+    </div>
+    
+    <aside>
+        <div id="toc">
+        </div>
+    </aside>
+    
+</div>
+
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+    <p>由<a href="http://hexo.io/" target="_blank">Hexo</a>强力驱动，搭载<a href="https://github.com/wayou/hexo-theme-gstyle">gstyle</a>主题</p>
+    <p>
+        &copy; 2016 neutra
+    </p>
+</footer>
+<script src="/lib/jquery.js"></script>
+<script src="/lib/waves.js"></script>
+<script src="/lib/jquery-ui.js"></script>
+<script src="/lib/jquery.tocify.js"></script>
+<script src="/js/main.js"></script>
+
+    </body>
+</html>
