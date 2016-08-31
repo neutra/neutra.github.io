@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://neutra.github.io/"/>
-  <updated>2016-08-31T08:44:25.301Z</updated>
+  <updated>2016-08-31T09:18:55.760Z</updated>
   <id>http://neutra.github.io/</id>
   
   <author>
@@ -20,14 +20,14 @@
     <link href="http://neutra.github.io/2016/TextView%E6%96%87%E5%AD%97%E5%AE%9E%E9%99%85%E9%AB%98%E5%BA%A6%E5%88%86%E6%9E%90/"/>
     <id>http://neutra.github.io/2016/TextView文字实际高度分析/</id>
     <published>2016-08-30T16:00:00.000Z</published>
-    <updated>2016-08-31T08:44:25.301Z</updated>
+    <updated>2016-08-31T09:18:55.760Z</updated>
     
     <content type="html"><![CDATA[<h2 id="问题"><a href="/2016/TextView文字实际高度分析/#问题" class="headerlink" title="问题"></a>问题</h2><p>做Android开发的人都知道怎么设置文字高度：</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">TextView</span></span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"wrap_content"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">    <span class="attr">android:includeFontPadding</span>=<span class="string">"false"</span></div><div class="line">    <span class="attr">android:textSize</span>=<span class="string">"20sp"</span></div><div class="line">    <span class="attr">android:text</span>=<span class="string">"Abc"</span> /&gt;</div></pre></td></tr></table></figure>
-<p>可是有多少人注意到，在手机上这个TextView的实际高度是并不是20sp，那实际高度是多少？</p>
+<p>可是有多少人注意到，在手机上这个TextView的实际高度是并不是20sp，为什么？</p>
 <p>换句话说，<strong>如何使TextView文字的尺寸位置与设计稿精确一致？</strong></p>
 <a id="more"></a>
-<h2 id="分析"><a href="/2016/TextView文字实际高度分析/#分析" class="headerlink" title="分析"></a>分析</h2><p>因手上只有魅蓝Note3(Flyme系统，基于Android 5.1，1090x1920, density=3)，以下分析和结论均在此机子上测试，其他版本的原理都是一样的，区别在于字体文件和配置可能不一样。</p>
+<h2 id="分析"><a href="/2016/TextView文字实际高度分析/#分析" class="headerlink" title="分析"></a>分析</h2><p>因手上只有魅蓝Note3(Flyme系统，基于Android 5.1，1090x1920，density=3)，以下分析和结论均在此机子上测试，其他版本的原理都是一样的，区别在于字体文件和配置可能不一样。</p>
 <p><img src="/2016/TextView文字实际高度分析/ttf-metrics.png" alt=""></p>
 <p>(待续)</p>
 <p>分析的过程就是各种查资料各种尝试，很多人其实只需要知道结论就行了，所以先把结论贴出来：</p>
@@ -36,57 +36,76 @@
 </blockquote>
 <p>density=3屏幕下，”夔Madpx”/“s夔Madpx”/“Madpx”对应尺寸50sp/50dp/150px高度都是202px(includePadding)/176px</p>
 <h3 id="2-WRAP-CONTENT-的TextView的真实高度-与-textSize-是否成正比例？"><a href="/2016/TextView文字实际高度分析/#2-WRAP-CONTENT-的TextView的真实高度-与-textSize-是否成正比例？" class="headerlink" title="2. WRAP_CONTENT 的TextView的真实高度 与 textSize 是否成正比例？"></a>2. WRAP_CONTENT 的TextView的真实高度 与 textSize 是否成正比例？</h3><blockquote>
-<p><strong> YES </strong></p>
+<p><strong> YES </strong> 无论是否includePadding，无论是否多行</p>
 </blockquote>
-<p>无论是否includePadding，无论是否多行</p>
 <h3 id="3-根据-textSize-如何确定单行-WRAP-CONTENT-的TextView的真实高度"><a href="/2016/TextView文字实际高度分析/#3-根据-textSize-如何确定单行-WRAP-CONTENT-的TextView的真实高度" class="headerlink" title="3. 根据 textSize 如何确定单行 WRAP_CONTENT 的TextView的真实高度"></a>3. 根据 textSize 如何确定单行 WRAP_CONTENT 的TextView的真实高度</h3><p>以使用字体的某个高度（如a-z)的高度作为基准，换算出相应的ascent/descent，再根据是否includePadding补充上下空白</p>
 <h3 id="4-includePadding的实际效果"><a href="/2016/TextView文字实际高度分析/#4-includePadding的实际效果" class="headerlink" title="4. includePadding的实际效果?"></a>4. includePadding的实际效果?</h3><p>includePadding对应高度与top/bottom/ascent/descent有关，只影响第一行和最后一行</p>
-<p>以下值基于getPaint().fontMetrics</p>
+<p>以下值基于fm = getPaint().fontMetrics</p>
 <blockquote>
-<p>———— TopPadding    = if includePadding then .top else .ascent<br>———— Ascent        = .ascent<br>– Line1  – Baseline      = 0<br>———— Ascent        = .descent<br>———— Ascent        = .ascent<br>– Line2  – Baseline      = 0<br>———— Ascent        = .descent<br>———— Ascent        = .ascent<br>– Line3  – Baseline      = 0<br>———— Ascent        = .descent<br>———— BottomPadding = if includePadding then .bottom else .descent<br>top = font.props.ymax, bottom = font.props.ymin</p>
+<p>———— TopPadding    = includePadding ? fm.top : fm.ascent<br>———— Ascent        = fm.ascent<br>– Line1  – Baseline      = 0<br>———— Descent       = fm.descent<br>———— Ascent        = fm.ascent<br>– Line2  – Baseline      = 0<br>———— Descent       = fm.descent<br>———— Ascent        = fm.ascent<br>– Line3  – Baseline      = 0<br>———— Descent       = fm.descent<br>———— BottomPadding = includePadding ? fm.bottom : fm.descent</p>
 </blockquote>
-<h3 id="5-android中使用的是mac-hhea-的ascender-descender，还是OS-2的winAscent-winDscent，还是TypoAscender-TypoDescender"><a href="/2016/TextView文字实际高度分析/#5-android中使用的是mac-hhea-的ascender-descender，还是OS-2的winAscent-winDscent，还是TypoAscender-TypoDescender" class="headerlink" title="5. android中使用的是mac(hhea)的ascender/descender，还是OS/2的winAscent/winDscent，还是TypoAscender/TypoDescender?"></a>5. android中使用的是mac(hhea)的ascender/descender，还是OS/2的winAscent/winDscent，还是TypoAscender/TypoDescender?</h3><p>从下面实验可以确定android使用的是mac(hhea)对应的ascender/descender</p>
+<p>top和bottom分别对应字体文件参数里的ymax和ymin</p>
+<blockquote>
+<p>top = font.props.ymax<br>bottom = font.props.ymin</p>
+</blockquote>
+<p>所以</p>
+<blockquote>
+<p>TopPadding = includePadding ? fm.top - fm.ascent: 0<br>BottomPadding = includePadding ? fm.bottom - fm.descent: 0</p>
+</blockquote>
+<h3 id="5-android中使用的是mac-hhea-的ascender-descender，还是OS-2的winAscent-winDescent，还是TypoAscender-TypoDescender"><a href="/2016/TextView文字实际高度分析/#5-android中使用的是mac-hhea-的ascender-descender，还是OS-2的winAscent-winDescent，还是TypoAscender-TypoDescender" class="headerlink" title="5. android中使用的是mac(hhea)的ascender/descender，还是OS/2的winAscent/winDescent，还是TypoAscender/TypoDescender?"></a>5. android中使用的是mac(hhea)的ascender/descender，还是OS/2的winAscent/winDescent，还是TypoAscender/TypoDescender?</h3><p>从下面实验可以确定android使用的是mac(hhea)对应的ascender/descender</p>
 <ul>
 <li>ascender/descender和winAscent/winDscent一致 字体DroidSansFallback-flyme-stub.ttf</li>
 </ul>
 <blockquote>
-<p>08-23 16:54:53.811 18380-18380/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView3: space=172.851562 top=-121.875000, ascender=-121.875000, descender=18.164062, bottom=18.164062</p>
+<p>E/FontSpace: textView3: space=172.851562 top=-121.875000, ascender=-121.875000, descender=18.164062, bottom=18.164062</p>
 </blockquote>
 <ul>
 <li>把ascender/descender修改后的字体DroidSansFallback-flyme-stub-mod-mac.ttf</li>
 </ul>
 <blockquote>
-<p>08-23 16:54:53.812 18380-18380/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView4: space=208.593750 top=-121.875000, ascender=-146.484375, descender=29.296875, bottom=18.164062</p>
+<p>E/FontSpace: textView4: space=208.593750 top=-121.875000, ascender=-146.484375, descender=29.296875, bottom=18.164062</p>
 </blockquote>
 <ul>
 <li>把winAscent/winDscent修改后的字体DroidSansFallback-flyme-stub-mod-win.ttf</li>
 </ul>
 <blockquote>
-<p>08-23 16:54:53.812 18380-18380/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView5: space=172.851562 top=-121.875000, ascender=-121.875000, descender=18.164062, bottom=18.164062</p>
+<p>E/FontSpace: textView5: space=172.851562 top=-121.875000, ascender=-121.875000, descender=18.164062, bottom=18.164062</p>
 </blockquote>
 <ul>
 <li>把typoAscender/typoDscender修改后的字体DroidSansFallback-flyme-stub-mod-typo.ttf</li>
 </ul>
 <blockquote>
-<p>08-23 17:16:17.150 32053-32053/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView6: space=172.851562 top=-121.875000, ascender=-121.875000, descender=18.164062, bottom=18.164062</p>
+<p>E/FontSpace: textView6: space=172.851562 top=-121.875000, ascender=-121.875000, descender=18.164062, bottom=18.164062</p>
 </blockquote>
-<h3 id="6-TextView默认字体是哪个"><a href="/2016/TextView文字实际高度分析/#6-TextView默认字体是哪个" class="headerlink" title="6. TextView默认字体是哪个?"></a>6. TextView默认字体是哪个?</h3><p>Flyme5.1环境下，没有DroidSansFallback.ttf，不是DroidSansFallback-flyme.ttf，默认尺寸与设置了android:typeface=”sans”一致<br>从源代码TypefaceImpl.cpp，可以确认安卓5.1的默认字体是写死在代码里的，位置在/system/fonts/Roboto-Regular.ttf，与system_fonts.xml没什么关系，如果该文件加载异常，则默认字体是一个包含空列表List<font>的FontFamily，会造成什么危害未知<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> *fns[] = &#123;</div><div class="line">    <span class="string">"/system/fonts/Roboto-Regular.ttf"</span>,</div><div class="line">&#125;;</div></pre></td></tr></table></figure></font></p>
+<h3 id="6-TextView默认字体是哪个"><a href="/2016/TextView文字实际高度分析/#6-TextView默认字体是哪个" class="headerlink" title="6. TextView默认字体是哪个?"></a>6. TextView默认字体是哪个?</h3><p>Flyme 5.1环境下，没有DroidSansFallback.ttf，不是DroidSansFallback-flyme.ttf，默认尺寸与设置了android:typeface=”sans”一致<br>从源代码TypefaceImpl.cpp，可以确认安卓5.1的默认字体是写死在代码里的，位置在/system/fonts/Roboto-Regular.ttf，与system_fonts.xml没什么关系，如果该文件加载异常，则默认字体是一个包含空列表List<font>的FontFamily，会造成什么危害未知</font></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> <span class="keyword">char</span> *fns[] = &#123;</div><div class="line">    <span class="string">"/system/fonts/Roboto-Regular.ttf"</span>,</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
 <p>在Flyme5.1环境下，可以确认Roboto-Regular.ttf的fm与默认的fm一致</p>
 <ul>
-<li><p>默认<br>08-23 18:03:39.158 29517-29517/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView1: space=175.781250 top=-159.228516, ascender=-139.160156, descender=36.621094, bottom=41.455078</p>
-</li>
-<li><p>指定Roboto-Regular.ttf字体<br>08-23 18:03:39.161 29517-29517/tools.android.neutra.personal.cn.fontspace E/FontSpace: textView9: space=175.781250 top=-159.228516, ascender=-139.160156, descender=36.621094, bottom=41.455078</p>
-</li>
+<li>默认</li>
 </ul>
+<blockquote>
+<p>E/FontSpace: textView1: space=175.781250 top=-159.228516, ascender=-139.160156, descender=36.621094, bottom=41.455078</p>
+</blockquote>
+<ul>
+<li>指定Roboto-Regular.ttf字体</li>
+</ul>
+<blockquote>
+<p>E/FontSpace: textView9: space=175.781250 top=-159.228516, ascender=-139.160156, descender=36.621094, bottom=41.455078</p>
+</blockquote>
 <p>估计安卓系统的默认字体会考虑各种字体Fallback情况下，使用默认字体的上下留白依然不会造成截断情况，所以默认字体的上下留白会显得很宽</p>
 <h3 id="7-android的TextView如何渲染文本"><a href="/2016/TextView文字实际高度分析/#7-android的TextView如何渲染文本" class="headerlink" title="7. android的TextView如何渲染文本?"></a>7. android的TextView如何渲染文本?</h3><ol>
-<li>通过Paint的getFontMetrics获取字体尺寸参数，主要逻辑在Paint.cpp和Skia库的SkPaint.cpp；对文本测量，确定分行处和补充</li>
-<li>对文本测量，确定分行处和补充…的位置，创建StaticLayout/DynamicLayout/BoringLayout</li>
-<li>Layout通过Canvas.drawText进行渲染</li>
+<li><p>通过Paint的getFontMetrics获取字体尺寸参数，主要逻辑在Paint.cpp和Skia库的SkPaint.cpp；对文本测量，确定分行处和补充</p>
+</li>
+<li><p>对文本测量，确定分行处和补充…的位置，创建StaticLayout/DynamicLayout/BoringLayout</p>
+</li>
+<li><p>Layout通过Canvas.drawText进行渲染</p>
+</li>
 </ol>
 <h3 id="8-如果发生Fallback，逻辑怎样"><a href="/2016/TextView文字实际高度分析/#8-如果发生Fallback，逻辑怎样" class="headerlink" title="8. 如果发生Fallback，逻辑怎样?"></a>8. 如果发生Fallback，逻辑怎样?</h3><ul>
-<li>如果当前的字体文件找不到相应的图案，就会根据fonts.xml/fallback_fonts.xml的配置逐个检查直到找到为止(实现代码可能在Typeface/FontLoader)</li>
-<li>如果找到新字体能提供该图案，则根据UPM和TextSize和Baseline确定绘制的位置和尺寸，但不影响TextView的测量高度</li>
+<li><p>如果当前的字体文件找不到相应的图案，就会根据fonts.xml/fallback_fonts.xml的配置逐个检查直到找到为止(实现代码可能在Typeface/FontLoader)</p>
+</li>
+<li><p>如果找到新字体能提供该图案，则根据UPM和TextSize和Baseline确定绘制的位置和尺寸，但不影响TextView的测量高度</p>
+</li>
 </ul>
 <h3 id="9-如何使TextView的高度“恰好”（几乎）为中文或英文的高度？"><a href="/2016/TextView文字实际高度分析/#9-如何使TextView的高度“恰好”（几乎）为中文或英文的高度？" class="headerlink" title="9. 如何使TextView的高度“恰好”（几乎）为中文或英文的高度？"></a>9. 如何使TextView的高度“恰好”（几乎）为中文或英文的高度？</h3><ol>
 <li><p>可以自定义只包含极少图案的字体，并设置合适的ascender/descender，如上面的DroidSansFallback-flyme-stub-mod-mac.ttf可以做到50dp的字体恰好WRAP_CONTENT的高度也是50dp<br>但这样就要针对特定版本（4.4/5.0/6.0)嵌入不同的字体，并且AOSP/Flyme等各个ROM的默认字体可能不一样</p>
@@ -113,16 +132,22 @@
 <li><p>开启includePadding时，距离上边界(2174-1547)/2048=30.6%，距离下边界(-427 - -566)/2048=6.8%，如希望垂直方向精确居中，需补偿下边距30.6%-6.8%=23.8%</p>
 </li>
 </ul>
-<h4 id="12-4-单行文字英文M实际图案高度和上下空白多少"><a href="/2016/TextView文字实际高度分析/#12-4-单行文字英文M实际图案高度和上下空白多少" class="headerlink" title="12.4 单行文字英文M实际图案高度和上下空白多少?"></a>12.4 单行文字英文M实际图案高度和上下空白多少?</h4><p>ymax(M)=1467，ymin(M)=-11<br>实际占用高度为(1467 - -11)/2048 = 72.2%</p>
+<h4 id="12-4-单行文字英文M实际图案高度和上下空白多少"><a href="/2016/TextView文字实际高度分析/#12-4-单行文字英文M实际图案高度和上下空白多少" class="headerlink" title="12.4 单行文字英文M实际图案高度和上下空白多少?"></a>12.4 单行文字英文M实际图案高度和上下空白多少?</h4><p>ymax(M)=1467，ymin(M)=-11</p>
+<p>实际占用高度为(1467 - -11)/2048 = 72.2%</p>
 <ul>
-<li>禁止includePadding时，距离上边界(1900-1467)/2048=21.1%，距离下边界(-11 - -500)/2048=23.9%，如希望垂直方向精确居中，需补偿上边距23.9-21.1%=2.8%</li>
-<li>开启includePadding时，距离上边界(2174-1467)/2048=34.5%，距离下边界(-11 - -566)/2048=27.1%，如希望垂直方向精确居中，需补偿下边距34.5%-27.1%=7.4%</li>
+<li><p>禁止includePadding时，距离上边界(1900-1467)/2048=21.1%，距离下边界(-11 - -500)/2048=23.9%，如希望垂直方向精确居中，需补偿上边距23.9-21.1%=2.8%</p>
+</li>
+<li><p>开启includePadding时，距离上边界(2174-1467)/2048=34.5%，距离下边界(-11 - -566)/2048=27.1%，如希望垂直方向精确居中，需补偿下边距34.5%-27.1%=7.4%</p>
+</li>
 </ul>
 <h4 id="12-5-单行文字中文实际图案高度和上下空白多少"><a href="/2016/TextView文字实际高度分析/#12-5-单行文字中文实际图案高度和上下空白多少" class="headerlink" title="12.5 单行文字中文实际图案高度和上下空白多少?"></a>12.5 单行文字中文实际图案高度和上下空白多少?</h4><p>只考虑常用中文情况下，fallback生效的字体是思源字体，因为两者区别极小，所以以SourceHanSansCN-Normal.ttf的值来计算，UPM=1000</p>
-<p>常用中文字符的ymax和ymin都是字符’夔’(\u5914)，ymax(夔)=842，ymin(夔)=-74<br>实际占用高度为(842 - -74)/1000 = 91.6%</p>
+<p>常用中文字符的ymax和ymin都是字符’夔’(\u5914)，ymax(夔)=842，ymin(夔)=-74</p>
+<p>实际占用高度为(842 - -74)/1000 = 91.6%</p>
 <ul>
-<li>禁止includePadding时，距离上边界1900/2048-842/1000=8.6%，距离下边界-74/1000 - -500/2048=17.0%，如希望垂直方向精确居中，需补偿上边距17.0-8.6%=8.4%</li>
-<li>开启includePadding时，距离上边界2174/2048-842/1000=22.0%，距离下边界-74/1000 - -566/2048=20.2%，如希望垂直方向精确居中，需补偿下边距22.0%-20.2%=1.8%</li>
+<li><p>禁止includePadding时，距离上边界1900/2048-842/1000=8.6%，距离下边界-74/1000 - -500/2048=17.0%，如希望垂直方向精确居中，需补偿上边距17.0-8.6%=8.4%</p>
+</li>
+<li><p>开启includePadding时，距离上边界2174/2048-842/1000=22.0%，距离下边界-74/1000 - -566/2048=20.2%，如希望垂直方向精确居中，需补偿下边距22.0%-20.2%=1.8%</p>
+</li>
 </ul>
 <p>所以，如果想指定偏大的高度值让英文垂直居中，禁止includePadding更居中，想让中文垂直居中，开启includePadding更居中</p>
 <h3 id="13-如何测量设计稿的文字尺寸？"><a href="/2016/TextView文字实际高度分析/#13-如何测量设计稿的文字尺寸？" class="headerlink" title="13. 如何测量设计稿的文字尺寸？"></a>13. 如何测量设计稿的文字尺寸？</h3><p>PS上设置的文字尺寸、画图设置的文字尺寸，都跟实际回执的文字高度不一样，没找到规律，想精确还原设计稿，还是直接量取PNG的字符高度较好</p>
@@ -132,7 +157,7 @@
     
       &lt;h2 id=&quot;问题&quot;&gt;&lt;a href=&quot;#问题&quot; class=&quot;headerlink&quot; title=&quot;问题&quot;&gt;&lt;/a&gt;问题&lt;/h2&gt;&lt;p&gt;做Android开发的人都知道怎么设置文字高度：&lt;/p&gt;
 &lt;figure class=&quot;highlight xml&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;2&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;3&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;4&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;5&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;6&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;&lt;span class=&quot;name&quot;&gt;TextView&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;attr&quot;&gt;android:layout_width&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;wrap_content&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;attr&quot;&gt;android:layout_height&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;wrap_content&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;attr&quot;&gt;android:includeFontPadding&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;false&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;attr&quot;&gt;android:textSize&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;20sp&quot;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;attr&quot;&gt;android:text&lt;/span&gt;=&lt;span class=&quot;string&quot;&gt;&quot;Abc&quot;&lt;/span&gt; /&amp;gt;&lt;/span&gt;&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;可是有多少人注意到，在手机上这个TextView的实际高度是并不是20sp，那实际高度是多少？&lt;/p&gt;
+&lt;p&gt;可是有多少人注意到，在手机上这个TextView的实际高度是并不是20sp，为什么？&lt;/p&gt;
 &lt;p&gt;换句话说，&lt;strong&gt;如何使TextView文字的尺寸位置与设计稿精确一致？&lt;/strong&gt;&lt;/p&gt;
     
     </summary>
@@ -183,40 +208,6 @@
   </entry>
   
   <entry>
-    <title>node.js的同异步调用的转换</title>
-    <link href="http://neutra.github.io/2013/node.js%E7%9A%84%E5%90%8C%E5%BC%82%E6%AD%A5%E8%B0%83%E7%94%A8%E7%9A%84%E8%BD%AC%E6%8D%A2/"/>
-    <id>http://neutra.github.io/2013/node.js的同异步调用的转换/</id>
-    <published>2013-11-10T16:00:00.000Z</published>
-    <updated>2016-08-31T06:24:01.899Z</updated>
-    
-    <content type="html"><![CDATA[<a id="more"></a>
-<p>node.js的同步调用是这样的：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sync</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> x = sync(); </div><div class="line"><span class="built_in">console</span>.log(x);</div></pre></td></tr></table></figure></p>
-<p>而异步调用则是这样的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">function async(callback) &#123;</div><div class="line">	callback(0);</div><div class="line">&#125;</div><div class="line"></div><div class="line">async(function(x)&#123; </div><div class="line">	console.log(x);</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
-<p>假如，某个函数本来是异步方式的，某天需求变了，要改成同步方式，很简单：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">async</span>(<span class="params">callback</span>) </span>&#123;</div><div class="line">	callback(sync());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>但是，反过来则很难。因为callback原本并不存在：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sync</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	<span class="comment">//async(callback???);</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>偶然的情况下，发现了一个叫node-fibers的库，看示例代码：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Fiber = <span class="built_in">require</span>(<span class="string">'fibers'</span>);</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sleep</span>(<span class="params">ms</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> fiber = Fiber.current;</div><div class="line">    setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">        fiber.run();</div><div class="line">    &#125;, ms);</div><div class="line">    Fiber.yield();</div><div class="line">&#125;</div><div class="line"></div><div class="line">Fiber(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'wait... '</span> + <span class="keyword">new</span> <span class="built_in">Date</span>);</div><div class="line">    sleep(<span class="number">1000</span>);</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'ok... '</span> + <span class="keyword">new</span> <span class="built_in">Date</span>);</div><div class="line">&#125;).run();</div><div class="line"><span class="built_in">console</span>.log(<span class="string">'back in main'</span>);</div></pre></td></tr></table></figure></p>
-<p>Fiber居然在一个同步的方法调用内部(sleep(ms))，实现了异步调用(setTimeout)，而回调正是Fiber.yield()之后的代码！</p>
-<p>感叹作者神一般的封装之余，瞄了几眼代码，果然，是用了Native code实现的：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * `Fiber.yield()` will halt execution of the current fiber and return control</div><div class="line"> * back to original caller of run(). If an argument is supplied to yield(),</div><div class="line"> * run() will return that value.</div><div class="line"> *</div><div class="line"> * When run() is called again, yield() will return.</div><div class="line"> *</div><div class="line"> * Note that this function is a global to allow for correct garbage</div><div class="line"> * collection. This results in no loss of functionality because it is only</div><div class="line"> * valid to yield from the currently running fiber anyway.</div><div class="line"> *</div><div class="line"> * Note also that `yield` is a reserved word in Javascript. This is normally</div><div class="line"> * not an issue, however some code linters may complain. Rest assured that it</div><div class="line"> * will run fine now and in future versions of Javascript.</div><div class="line"> */</div><div class="line">Fiber.yield = <span class="function"><span class="keyword">function</span>(<span class="params">param</span>) </span>&#123;</div><div class="line">    [native code]</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>node-fibers的实现方式虽然不是很’node’，但它最大的价值，是把node.js的同异步调用的转换，补上了完美的句号。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
-&lt;p&gt;node.js的同步调用是这样的：&lt;br&gt;&lt;figure class=&quot;highlight javascript&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;
-    
-    </summary>
-    
-      <category term="others" scheme="http://neutra.github.io/categories/others/"/>
-    
-    
-      <category term="node.js" scheme="http://neutra.github.io/tags/node-js/"/>
-    
-      <category term="异步" scheme="http://neutra.github.io/tags/%E5%BC%82%E6%AD%A5/"/>
-    
-  </entry>
-  
-  <entry>
     <title>新浪微博sdk(android)提示21337的处理方法</title>
     <link href="http://neutra.github.io/2013/%E6%96%B0%E6%B5%AA%E5%BE%AE%E5%8D%9Asdk-android-%E6%8F%90%E7%A4%BA21337%E7%9A%84%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95/"/>
     <id>http://neutra.github.io/2013/新浪微博sdk-android-提示21337的处理方法/</id>
@@ -255,6 +246,40 @@
     
     
       <category term="android" scheme="http://neutra.github.io/tags/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>node.js的同异步调用的转换</title>
+    <link href="http://neutra.github.io/2013/node.js%E7%9A%84%E5%90%8C%E5%BC%82%E6%AD%A5%E8%B0%83%E7%94%A8%E7%9A%84%E8%BD%AC%E6%8D%A2/"/>
+    <id>http://neutra.github.io/2013/node.js的同异步调用的转换/</id>
+    <published>2013-11-10T16:00:00.000Z</published>
+    <updated>2016-08-31T06:24:01.899Z</updated>
+    
+    <content type="html"><![CDATA[<a id="more"></a>
+<p>node.js的同步调用是这样的：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sync</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> x = sync(); </div><div class="line"><span class="built_in">console</span>.log(x);</div></pre></td></tr></table></figure></p>
+<p>而异步调用则是这样的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">function async(callback) &#123;</div><div class="line">	callback(0);</div><div class="line">&#125;</div><div class="line"></div><div class="line">async(function(x)&#123; </div><div class="line">	console.log(x);</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>假如，某个函数本来是异步方式的，某天需求变了，要改成同步方式，很简单：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">async</span>(<span class="params">callback</span>) </span>&#123;</div><div class="line">	callback(sync());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>但是，反过来则很难。因为callback原本并不存在：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sync</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	<span class="comment">//async(callback???);</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>偶然的情况下，发现了一个叫node-fibers的库，看示例代码：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Fiber = <span class="built_in">require</span>(<span class="string">'fibers'</span>);</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sleep</span>(<span class="params">ms</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> fiber = Fiber.current;</div><div class="line">    setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">        fiber.run();</div><div class="line">    &#125;, ms);</div><div class="line">    Fiber.yield();</div><div class="line">&#125;</div><div class="line"></div><div class="line">Fiber(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'wait... '</span> + <span class="keyword">new</span> <span class="built_in">Date</span>);</div><div class="line">    sleep(<span class="number">1000</span>);</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'ok... '</span> + <span class="keyword">new</span> <span class="built_in">Date</span>);</div><div class="line">&#125;).run();</div><div class="line"><span class="built_in">console</span>.log(<span class="string">'back in main'</span>);</div></pre></td></tr></table></figure></p>
+<p>Fiber居然在一个同步的方法调用内部(sleep(ms))，实现了异步调用(setTimeout)，而回调正是Fiber.yield()之后的代码！</p>
+<p>感叹作者神一般的封装之余，瞄了几眼代码，果然，是用了Native code实现的：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * `Fiber.yield()` will halt execution of the current fiber and return control</div><div class="line"> * back to original caller of run(). If an argument is supplied to yield(),</div><div class="line"> * run() will return that value.</div><div class="line"> *</div><div class="line"> * When run() is called again, yield() will return.</div><div class="line"> *</div><div class="line"> * Note that this function is a global to allow for correct garbage</div><div class="line"> * collection. This results in no loss of functionality because it is only</div><div class="line"> * valid to yield from the currently running fiber anyway.</div><div class="line"> *</div><div class="line"> * Note also that `yield` is a reserved word in Javascript. This is normally</div><div class="line"> * not an issue, however some code linters may complain. Rest assured that it</div><div class="line"> * will run fine now and in future versions of Javascript.</div><div class="line"> */</div><div class="line">Fiber.yield = <span class="function"><span class="keyword">function</span>(<span class="params">param</span>) </span>&#123;</div><div class="line">    [native code]</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>node-fibers的实现方式虽然不是很’node’，但它最大的价值，是把node.js的同异步调用的转换，补上了完美的句号。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;p&gt;node.js的同步调用是这样的：&lt;br&gt;&lt;figure class=&quot;highlight javascript&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;
+    
+    </summary>
+    
+      <category term="others" scheme="http://neutra.github.io/categories/others/"/>
+    
+    
+      <category term="node.js" scheme="http://neutra.github.io/tags/node-js/"/>
+    
+      <category term="异步" scheme="http://neutra.github.io/tags/%E5%BC%82%E6%AD%A5/"/>
     
   </entry>
   
