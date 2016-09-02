@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+          <head>
+        <meta charset="utf-8">
+            
+            <title>
+                Android实现Material风格的UI | f•ﻌ•l
+            </title>
+            <meta content="width=device-width, initial-scale=1" name="viewport">
+            <meta name="theme-color" content="#4184f3">
+            
+            
+            <link href="/favicon.ico" rel="icon"/>
+            
+
+            <link rel="stylesheet" href="/css/highlight.light.css">
+            <link rel="stylesheet" href="/css/prism-customize.css">
+            <link rel="stylesheet" href="/css/nav-icon.css">
+            <link rel="stylesheet" href="/css/waves.min.css">
+            <link rel="stylesheet" href="/css/jquery.tocify.css">
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/nav-indicator.css">
+            
+  
+
+  
+            </meta>
+        </meta>
+    </head>
+
+    <body>
+        <header>
+            <!-- cover image or sth. -->
+        </header>
+        <div id="main" class="m-scene">
+            
+<div class="nav-wrapper">
+
+    <div class="container">
+        <nav>
+            <div class="logo wave">
+                <a href="/" id="logo">
+                    f•ﻌ•l
+                </a>
+            </div>
+            <div class="nav-toggle-icon" >
+                <div class="material-hamburger">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+            </div>
+            <div class="menu-wrapper">
+                <div class="nav-indicator">
+                </div>
+                <ul class="menus">
+                    
+                     
+                        <li>
+                            <a class="wave " href="/">
+                                首页
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/archives">
+                                归档
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/about">
+                                关于
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave no-smoothstate" href="/atom.xml">
+                                订阅
+                            </a>
+                        </li>
+                     
+                    
+                   
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>
+            <div class="container content">
+                <div class="scene_element scene_element--fadein">
+                    <div class="row">
+    <div class="main">
+        <article>
+          
+          <header class="post-header">
+          
+          </header>
+          <h1 class="post-title">Android实现Material风格的UI</h1>
+
+          <section class="post-info">
+            <span class="post-date">2016/09/01</span>
+            
+            <span class="post-category">
+                <a class="article-category-link" href="/categories/android/">android</a>
+            </span>
+            
+            
+            <span class="post-tags">
+              <ul class="post-tag-list"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/android/">android</a></li><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/design/">design</a></li></ul>
+            </span>
+            
+          </section>
+
+          <section class="post-content">
+            <p><a href="https://material.google.com/" target="_blank" rel="external">Material Design</a>为UI设计提供了许多准则，保证统一的视觉效果和合理的交互。</p>
+<p>比较明显的是：</p>
+<ul>
+<li><p>通过高度描述层次</p>
+</li>
+<li><p>通过阴影表达高度</p>
+</li>
+<li><p>通过动画引起关注</p>
+</li>
+</ul>
+<p>假如有了Material风格的设计稿，怎样在Android里实现呢？</p>
+<a id="more"></a>
+<h2 id="1-Android-4-X或以下版本"><a href="/2016/Android实现Material风格的UI/#1-Android-4-X或以下版本" class="headerlink" title="1. Android 4.X或以下版本"></a>1. Android 4.X或以下版本</h2><h3 id="1-1-主题、布局、配色"><a href="/2016/Android实现Material风格的UI/#1-1-主题、布局、配色" class="headerlink" title="1.1 主题、布局、配色"></a>1.1 主题、布局、配色</h3><p>一直都有，改配置即可</p>
+<h3 id="1-2-全屏扩散的水波纹触摸反馈"><a href="/2016/Android实现Material风格的UI/#1-2-全屏扩散的水波纹触摸反馈" class="headerlink" title="1.2 全屏扩散的水波纹触摸反馈"></a>1.2 全屏扩散的水波纹触摸反馈</h3><p>如果非要做，我猜可以这样：在根布局上再加一层，经过一堆坐标转换和裁切，把动画绘制在那个层，但工作量、性能和体验都可想而知。</p>
+<h3 id="1-3-共享元素转换动画"><a href="/2016/Android实现Material风格的UI/#1-3-共享元素转换动画" class="headerlink" title="1.3 共享元素转换动画"></a>1.3 共享元素转换动画</h3><p>如果不是真爱，我会跟设计师协商换方案……</p>
+<p>Activity基本不能直接用了，需要用Fragment重写，自己管理Fragment的生命周期，控制窗口事件，控制转场动画，光想想都觉得很蛋疼。</p>
+<h3 id="1-4-阴影"><a href="/2016/Android实现Material风格的UI/#1-4-阴影" class="headerlink" title="1.4 阴影"></a>1.4 阴影</h3><p>每个程序员应该都会对阴影深恶痛绝，因为阴影很难处理。可是设计师不知道啊，在扁平风没流行的时候，设计师们恨不得给每个浮起的部件都加上阴影，结果阴影成了程序员的阴影，成了各种geek方案的实验田。</p>
+<p>在Android 4.X或更低版本的系统里，一个View如果要显示阴影，通常是通过nine-patch背景图实现的，所以<strong>View的尺寸会包含阴影的部分</strong>，于是便带来各种计算问题：</p>
+<h4 id="1-4-1-如何确定View的尺寸？"><a href="/2016/Android实现Material风格的UI/#1-4-1-如何确定View的尺寸？" class="headerlink" title="1.4.1 如何确定View的尺寸？"></a>1.4.1 如何确定View的尺寸？</h4><p>尺寸问题大多可以用土方法解决：</p>
+<ul>
+<li>如果View固定长宽，测量完尺寸后，额外加上阴影的尺寸</li>
+<li>为mdpi/hdpi/xhdpi/xxhdpi指定不同阴影尺寸的nine-patch图片</li>
+<li>定义shadowLeft/shadowRight/shadowTop/shadowBottom之类参数辅助计算</li>
+</ul>
+<h4 id="1-4-2-如何定位？"><a href="/2016/Android实现Material风格的UI/#1-4-2-如何定位？" class="headerlink" title="1.4.2 如何定位？"></a>1.4.2 如何定位？</h4><p>定位问题处理起来非常麻烦。</p>
+<p>例如一个很简单的界面，ActionBar下面一个全屏的ScrollView。 从布局来看，外层应该是个垂直的LinearLayout，一个ActionBar，一个ScrollView搞定。</p>
+<p>可是Material风格的ActionBar下面是有个半透明阴影的，阴影和ScrollView的是部分重合的！</p>
+<p>噩梦开始了，先把LinearLayout改成ReleativeLayout，ActionBar指定高度为actionBarHeight+shadowBottom，ScrollView指定topMargin为actionBarHeight。当然还有其他的方法，例如把阴影单独切图做成个View跟ScrollView重叠放置。</p>
+<h4 id="1-4-3-高度变化时阴影尺寸怎么改变？"><a href="/2016/Android实现Material风格的UI/#1-4-3-高度变化时阴影尺寸怎么改变？" class="headerlink" title="1.4.3 高度变化时阴影尺寸怎么改变？"></a>1.4.3 高度变化时阴影尺寸怎么改变？</h4><p>几乎无法实现，除非恶劣地提供一系列不同阴影尺寸的背景图……</p>
+<h4 id="1-4-4-列表的dividerHeight如果大于0小于shadowBottom怎么办？"><a href="/2016/Android实现Material风格的UI/#1-4-4-列表的dividerHeight如果大于0小于shadowBottom怎么办？" class="headerlink" title="1.4.4 列表的dividerHeight如果大于0小于shadowBottom怎么办？"></a>1.4.4 列表的dividerHeight如果大于0小于shadowBottom怎么办？</h4><p>定义个垂直方向裁切过的Drawable作为divider，底部可能还要补一个完整高度的阴影，如果每项的底色是透明的还要补个被遮盖的部分阴影……</p>
+<h4 id="1-4-5-问题根源在哪？"><a href="/2016/Android实现Material风格的UI/#1-4-5-问题根源在哪？" class="headerlink" title="1.4.5 问题根源在哪？"></a>1.4.5 问题根源在哪？</h4><p>根据Material风格的定义，高度是View的基本属性，阴影属于环境，应该由环境结合View的高度进行渲染。<br>用背景图来实现阴影，视图模型就跟设计稿不一致，任何补救都是拆东墙补西墙。</p>
+<h2 id="2-Android-5-x或以上版本"><a href="/2016/Android实现Material风格的UI/#2-Android-5-x或以上版本" class="headerlink" title="2. Android 5.x或以上版本"></a>2. Android 5.x或以上版本</h2><p>有了API21和v7兼容包，上面的那堆问题终于不是问题了！</p>
+<p>官方文档： <a href="https://developer.android.com/training/material/index.html" target="_blank" rel="external">How to implement material design on Android</a></p>
+<h3 id="2-1-Material主题"><a href="/2016/Android实现Material风格的UI/#2-1-Material主题" class="headerlink" title="2.1 Material主题"></a>2.1 Material主题</h3><p>官方提供深色版主题(Theme.Material)和浅色版主题(Theme.Material.Light)</p>
+<p>可以自定义主题色和强调色:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">resources</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">style</span> <span class="attr">name</span>=<span class="string">"AppTheme"</span> <span class="attr">parent</span>=<span class="string">"android:Theme.Material"</span>&gt;</span><span class="xml"></span></div><div class="line">    <span class="comment">&lt;!-- Main theme colors --&gt;</span></div><div class="line">    <span class="comment">&lt;!--   your app branding color for the app bar --&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">item</span> <span class="attr">name</span>=<span class="string">"android:colorPrimary"</span>&gt;</span>@color/primary<span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line">    <span class="comment">&lt;!--   darker variant for the status bar and contextual app bars --&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">item</span> <span class="attr">name</span>=<span class="string">"android:colorPrimaryDark"</span>&gt;</span>@color/primary_dark<span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line">    <span class="comment">&lt;!--   theme UI controls like checkboxes and text fields --&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">item</span> <span class="attr">name</span>=<span class="string">"android:colorAccent"</span>&gt;</span>@color/accent<span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">resources</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>状态栏颜色由statusBarColor决定，默认将继承colorPrimaryDark的值，可设置为@android:color/transparent使之透明。</p>
+<p><img src="/2016/Android实现Material风格的UI/ThemeColors.png" alt=""></p>
+<h3 id="2-2-RecyclerView"><a href="/2016/Android实现Material风格的UI/#2-2-RecyclerView" class="headerlink" title="2.2 RecyclerView"></a>2.2 RecyclerView</h3><figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">dependencies &#123;</div><div class="line">    compile <span class="string">'com.android.support:recyclerview-v7:21.0.+'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>内置的布局管理器包括：</p>
+<ul>
+<li><p>LinearLayoutManager: 以垂直或水平滚动列表方式显示项目</p>
+</li>
+<li><p>GridLayoutManager: 在网格中显示项目</p>
+</li>
+<li><p>StaggeredGridLayoutManager: 在分散对齐网格中显示项目</p>
+</li>
+</ul>
+<p>RecyclerView添加与删除项目时有默认动画，可通过setItemAnimator()自定义动画</p>
+<h3 id="2-3-CardView"><a href="/2016/Android实现Material风格的UI/#2-3-CardView" class="headerlink" title="2.3 CardView"></a>2.3 CardView</h3><figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">dependencies &#123;</div><div class="line">    compile <span class="string">'com.android.support:cardview-v7:21.0.+'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>包含以下属性/方法：</p>
+<ul>
+<li><p>阴影：cardElevation</p>
+</li>
+<li><p>圆角半径：cardCornerRadius/setRadius()</p>
+</li>
+<li><p>背景颜色：cardBackgroundColor</p>
+</li>
+</ul>
+<h3 id="2-4-阴影"><a href="/2016/Android实现Material风格的UI/#2-4-阴影" class="headerlink" title="2.4 阴影"></a>2.4 阴影</h3><p>Z = elevation + translationZ，单位dp</p>
+<h4 id="2-4-1-静止高度-elevation"><a href="/2016/Android实现Material风格的UI/#2-4-1-静止高度-elevation" class="headerlink" title="2.4.1 静止高度 elevation"></a>2.4.1 静止高度 elevation</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">TextView</span></span></div><div class="line">    <span class="attr">android:id</span>=<span class="string">"@+id/my_textview"</span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"wrap_content"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">    <span class="attr">android:text</span>=<span class="string">"@string/next"</span></div><div class="line">    <span class="attr">android:background</span>=<span class="string">"@color/white"</span></div><div class="line">    <span class="attr">android:elevation</span>=<span class="string">"5dp"</span> /&gt;</div></pre></td></tr></table></figure>
+<h4 id="2-4-2-高度偏移-translationZ"><a href="/2016/Android实现Material风格的UI/#2-4-2-高度偏移-translationZ" class="headerlink" title="2.4.2 高度偏移 translationZ"></a>2.4.2 高度偏移 translationZ</h4><p>使用 ViewPropertyAnimator.z() 和 ViewPropertyAnimator.translationZ() 可创建视图高度动画</p>
+<h4 id="2-4-3-轮廓-Outline"><a href="/2016/Android实现Material风格的UI/#2-4-3-轮廓-Outline" class="headerlink" title="2.4.3 轮廓 Outline"></a>2.4.3 轮廓 Outline</h4><p>视图将投射一个带有圆角的阴影，轮廓则用于渲染阴影。</p>
+<p>默认情况下轮廓是背景的形状，使用View.setOutlineProvider()可自定义轮廓，如果希望禁止阴影，可以设为null。</p>
+<h3 id="2-5-裁剪"><a href="/2016/Android实现Material风格的UI/#2-5-裁剪" class="headerlink" title="2.5 裁剪"></a>2.5 裁剪</h3><ul>
+<li><p>通过clipToOutline/View.setClipToOutline()可指定轮廓，但目前仅支持矩形、圆形和圆角矩形。</p>
+</li>
+<li><p>裁剪视图是高成本操作，因此不可用于动画</p>
+</li>
+</ul>
+<h3 id="2-6-图片"><a href="/2016/Android实现Material风格的UI/#2-6-图片" class="headerlink" title="2.6 图片"></a>2.6 图片</h3><h4 id="2-6-1-着色"><a href="/2016/Android实现Material风格的UI/#2-6-1-着色" class="headerlink" title="2.6.1 着色"></a>2.6.1 着色</h4><p>通过tint/tintMode可为BitmapDrawable/NinePatchDrawable着色。</p>
+<h4 id="2-6-2-萃取颜色"><a href="/2016/Android实现Material风格的UI/#2-6-2-萃取颜色" class="headerlink" title="2.6.2 萃取颜色"></a>2.6.2 萃取颜色</h4><figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">dependencies &#123;</div><div class="line">    compile <span class="string">'com.android.support:palette-v7:21.0.0'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Palette类可从图像萃取下列突出颜色：</p>
+<ul>
+<li>鲜艳 Vibrant</li>
+<li>鲜艳深色 Vibrant Dark</li>
+<li>鲜艳浅色 Vibrant Light</li>
+<li>低调 Muted</li>
+<li>低调深色 Muted Dark</li>
+<li>低调浅色 Muted Light</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Synchronous</span></div><div class="line">Palette p = Palette.from(bitmap).generate();</div><div class="line"></div><div class="line"><span class="comment">// Asynchronous</span></div><div class="line">Palette.from(bitmap).generate(<span class="keyword">new</span> PaletteAsyncListener() &#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onGenerated</span><span class="params">(Palette p)</span> </span>&#123;</div><div class="line">        <span class="comment">// Use generated instance</span></div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h4 id="2-6-3-矢量图片"><a href="/2016/Android实现Material风格的UI/#2-6-3-矢量图片" class="headerlink" title="2.6.3 矢量图片"></a>2.6.3 矢量图片</h4><p>可使用vector和SVG语法描述矢量图：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">&lt;!-- res/drawable/heart.xml --&gt;</div><div class="line">&lt;vector xmlns:android="http://schemas.android.com/apk/res/android"</div><div class="line">    &lt;!-- intrinsic size of the drawable --&gt;</div><div class="line">    android:height="256dp"</div><div class="line">    android:width="256dp"</div><div class="line">    &lt;!-- size of the virtual canvas --&gt;</div><div class="line">    android:viewportWidth="32"</div><div class="line">    android:viewportHeight="32"&gt;</div><div class="line"></div><div class="line">  &lt;!-- draw a path --&gt;</div><div class="line">  &lt;path android:fillColor="#8fff"</div><div class="line">      android:pathData="M20.5,9.5</div><div class="line">                        c-1.955,0,-3.83,1.268,-4.5,3</div><div class="line">                        c-0.67,-1.732,-2.547,-3,-4.5,-3</div><div class="line">                        C8.957,9.5,7,11.432,7,14</div><div class="line">                        c0,3.53,3.793,6.257,9,11.5</div><div class="line">                        c5.207,-5.242,9,-7.97,9,-11.5</div><div class="line">                        C25,11.432,23.043,9.5,20.5,9.5z" /&gt;</div><div class="line">&lt;/vector&gt;</div></pre></td></tr></table></figure>
+<h3 id="2-7-动画"><a href="/2016/Android实现Material风格的UI/#2-7-动画" class="headerlink" title="2.7 动画"></a>2.7 动画</h3><h4 id="2-7-1-触摸反馈"><a href="/2016/Android实现Material风格的UI/#2-7-1-触摸反馈" class="headerlink" title="2.7.1 触摸反馈"></a>2.7.1 触摸反馈</h4><p>使用ripple/RippleDrawable实现水波纹效果 </p>
+<ul>
+<li>?android:attr/selectableItemBackground 指定有界的波纹。</li>
+<li>?android:attr/selectableItemBackgroundBorderless 指定无界的波纹</li>
+<li>?android:colorControlHighlight 指定默认触摸反馈颜色</li>
+</ul>
+<h4 id="2-7-2-揭露效果-reveal"><a href="/2016/Android实现Material风格的UI/#2-7-2-揭露效果-reveal" class="headerlink" title="2.7.2 揭露效果 (reveal)"></a>2.7.2 揭露效果 (reveal)</h4><p>用于显示或隐藏一组UI元素。ViewAnimationUtils.createCircularReveal()能够为裁剪区域添加动画以揭露或隐藏视图。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// previously invisible view</span></div><div class="line">View myView = findViewById(R.id.my_view);</div><div class="line"></div><div class="line"><span class="comment">// get the center for the clipping circle</span></div><div class="line"><span class="keyword">int</span> cx = (myView.getLeft() + myView.getRight()) / <span class="number">2</span>;</div><div class="line"><span class="keyword">int</span> cy = (myView.getTop() + myView.getBottom()) / <span class="number">2</span>;</div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">// 显示:</span></div><div class="line"><span class="keyword">int</span> initialRadius = <span class="number">0</span>;</div><div class="line"><span class="keyword">int</span> finalRadius = Math.max(myView.getWidth(), myView.getHeight());</div><div class="line">Animator anim = ViewAnimationUtils.createCircularReveal(myView, cx, cy, initialRadius, finalRadius);</div><div class="line">myView.setVisibility(View.VISIBLE);</div><div class="line">anim.start();</div><div class="line"></div><div class="line"><span class="comment">// 隐藏</span></div><div class="line"><span class="keyword">int</span> initialRadius = myView.getWidth();</div><div class="line"><span class="keyword">int</span> finalRadius = <span class="number">0</span>;</div><div class="line">Animator anim = ViewAnimationUtils.createCircularReveal(myView, cx, cy, initialRadius, finalRadius);</div><div class="line">anim.addListener(<span class="keyword">new</span> AnimatorListenerAdapter() &#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationEnd</span><span class="params">(Animator animation)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onAnimationEnd(animation);</div><div class="line">        myView.setVisibility(View.INVISIBLE);</div><div class="line">    &#125;</div><div class="line">&#125;);</div><div class="line">anim.start();</div></pre></td></tr></table></figure>
+<h4 id="2-7-3-转换"><a href="/2016/Android实现Material风格的UI/#2-7-3-转换" class="headerlink" title="2.7.3 转换"></a>2.7.3 转换</h4><p>转换继承自android.transition.Visibility，默认转换是淡入淡出</p>
+<ul>
+<li>分解 Explode</li>
+<li>滑动 Slide</li>
+<li>淡入淡出 Fade</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">name</span>=<span class="string">"BaseAppTheme"</span> <span class="attr">parent</span>=<span class="string">"android:Theme.Material"</span>&gt;</span><span class="xml"></span></div><div class="line">  <span class="comment">&lt;!-- enable window content transitions --&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">item</span> <span class="attr">name</span>=<span class="string">"android:windowContentTransitions"</span>&gt;</span>true<span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line"></div><div class="line">  <span class="comment">&lt;!-- specify enter and exit transitions --&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">item</span> <span class="attr">name</span>=<span class="string">"android:windowEnterTransition"</span>&gt;</span>@transition/explode<span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">item</span> <span class="attr">name</span>=<span class="string">"android:windowExitTransition"</span>&gt;</span>@transition/explode<span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line"></div><div class="line">  <span class="comment">&lt;!-- specify shared element transitions --&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">item</span> <span class="attr">name</span>=<span class="string">"android:windowSharedElementEnterTransition"</span>&gt;</span></div><div class="line">    @transition/change_image_transform<span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">item</span> <span class="attr">name</span>=<span class="string">"android:windowSharedElementExitTransition"</span>&gt;</span></div><div class="line">    @transition/change_image_transform<span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line"><span class="comment">&lt;!-- res/transition/change_image_transform.xml --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">transitionSet</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">     <span class="attr">android:transitionOrdering</span>=<span class="string">"sequential"</span>&gt;</div><div class="line">    <span class="tag">&lt;<span class="name">changeBounds</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">fade</span> <span class="attr">android:fadingMode</span>=<span class="string">"fade_out"</span> &gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">targets</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">target</span> <span class="attr">android:targetId</span>=<span class="string">"@id/grayscaleContainer"</span> /&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">targets</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">fade</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">transitionSet</span>&gt;</span></div><div class="line"><span class="comment">&lt;!-- res/transition/custom.xml --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">transition</span> <span class="attr">class</span>=<span class="string">"my.app.transition.CustomTransition"</span>/&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);</div><div class="line">        setContentView(R.layout.activity_my);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onSomeButtonClicked</span><span class="params">(View view)</span> </span>&#123;</div><div class="line">        getWindow().setExitTransition(<span class="keyword">new</span> Explode());</div><div class="line">        Intent intent = <span class="keyword">new</span> Intent(<span class="keyword">this</span>, MyOtherActivity.class);</div><div class="line">        startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(<span class="keyword">this</span>).toBundle());</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li><p>使用Window.setAllowEnterTransitionOverlap()可以尽快开始转换。</p>
+</li>
+<li><p>如果结束时希望反转播放转换动画，应调用finishAfterTransition()而非finish()</p>
+</li>
+</ul>
+<h4 id="2-7-4-共享元素转换"><a href="/2016/Android实现Material风格的UI/#2-7-4-共享元素转换" class="headerlink" title="2.7.4 共享元素转换"></a>2.7.4 共享元素转换</h4><p>共享元素转换继承自android.transition.Transition </p>
+<ul>
+<li>changeBounds</li>
+<li>changeClipBounds</li>
+<li>changeTransform</li>
+<li>changeImageTransform</li>
+</ul>
+<h5 id="以共享元素启动一个操作行为"><a href="/2016/Android实现Material风格的UI/#以共享元素启动一个操作行为" class="headerlink" title="以共享元素启动一个操作行为"></a>以共享元素启动一个操作行为</h5><ol>
+<li>在主题中启用窗口内容转换</li>
+<li>在风格中指定一个共享元素转换</li>
+<li>将您的转换定义为 XML 资源</li>
+<li>指定共享元素通用名称 android:transitionName/View.setTransitionName() </li>
+<li>使用 ActivityOptions.makeSceneTransitionAnimation()</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 单个共享元素转换</span></div><div class="line">View androidRobotView = findViewById(R.id.image_small);</div><div class="line">ActivityOptions options = ActivityOptions</div><div class="line">	.makeSceneTransitionAnimation(<span class="keyword">this</span>, androidRobotView, <span class="string">"robot"</span>);</div><div class="line"></div><div class="line"><span class="comment">// 多个共享元素转换</span></div><div class="line"><span class="comment">// ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this,</span></div><div class="line"><span class="comment">//      Pair.create(view1, "agreedName1"),</span></div><div class="line"><span class="comment">//      Pair.create(view2, "agreedName2"));</span></div><div class="line"></div><div class="line">startActivity(<span class="keyword">new</span> Intent(<span class="keyword">this</span>, Activity2.class), options.toBundle());</div></pre></td></tr></table></figure>
+<h4 id="2-7-5-曲线运动"><a href="/2016/Android实现Material风格的UI/#2-7-5-曲线运动" class="headerlink" title="2.7.5 曲线运动"></a>2.7.5 曲线运动</h4><p>PathInterpolator可基于贝塞尔曲线或Path<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">pathInterpolator</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">    <span class="attr">android:controlX1</span>=<span class="string">"0.4"</span></div><div class="line">    <span class="attr">android:controlY1</span>=<span class="string">"0"</span></div><div class="line">    <span class="attr">android:controlX2</span>=<span class="string">"1"</span></div><div class="line">    <span class="attr">android:controlY2</span>=<span class="string">"1"</span>/&gt;</div></pre></td></tr></table></figure></p>
+<p>系统提供了三种基本曲线：</p>
+<blockquote>
+<p>@interpolator/fast_out_linear_in.xml<br>@interpolator/fast_out_slow_in.xml<br>@interpolator/linear_out_slow_in.xml</p>
+</blockquote>
+<p>可通过ObjectAnimator的新构造函数添加路径动画<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">ObjectAnimator mAnimator;</div><div class="line">mAnimator = ObjectAnimator.ofFloat(view, View.X, View.Y, path);</div><div class="line">...</div><div class="line">mAnimator.start();</div></pre></td></tr></table></figure></p>
+<h4 id="2-7-6-状态动画"><a href="/2016/Android实现Material风格的UI/#2-7-6-状态动画" class="headerlink" title="2.7.6 状态动画"></a>2.7.6 状态动画</h4><p>通过android:stateListAnimator可以为View指定状态动画（神一般的功能，再也不用写视图状态机了）。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!-- animate the translationZ property of a view when pressed --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">selector</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">item</span> <span class="attr">android:state_pressed</span>=<span class="string">"true"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">set</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">objectAnimator</span> <span class="attr">android:propertyName</span>=<span class="string">"translationZ"</span></span></div><div class="line">        <span class="attr">android:duration</span>=<span class="string">"@android:integer/config_shortAnimTime"</span></div><div class="line">        <span class="attr">android:valueTo</span>=<span class="string">"2dp"</span></div><div class="line">        <span class="attr">android:valueType</span>=<span class="string">"floatType"</span>/&gt;</div><div class="line">        <span class="comment">&lt;!-- you could have other objectAnimator elements</span></div><div class="line">             here for "x" and "y", or other properties --&gt;</div><div class="line">    <span class="tag">&lt;/<span class="name">set</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">item</span> <span class="attr">android:state_enabled</span>=<span class="string">"true"</span></span></div><div class="line">    <span class="attr">android:state_pressed</span>=<span class="string">"false"</span></div><div class="line">    <span class="attr">android:state_focused</span>=<span class="string">"true"</span>&gt;</div><div class="line">    <span class="tag">&lt;<span class="name">set</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">objectAnimator</span> <span class="attr">android:propertyName</span>=<span class="string">"translationZ"</span></span></div><div class="line">        <span class="attr">android:duration</span>=<span class="string">"100"</span></div><div class="line">        <span class="attr">android:valueTo</span>=<span class="string">"0"</span></div><div class="line">        <span class="attr">android:valueType</span>=<span class="string">"floatType"</span>/&gt;</div><div class="line">    <span class="tag">&lt;/<span class="name">set</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">selector</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>Material主题的按钮默认情况下包含Z动画，可将stateListAnimator设为@null以避免这种行为。</p>
+<p>还可通过animated-selector/AnimatedStateListDrawable用图片表示View的不同状态：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">&lt;!-- res/drawable/myanimstatedrawable.xml --&gt;</div><div class="line">&lt;animated-selector</div><div class="line">    xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;&gt;</div><div class="line"></div><div class="line">    &lt;!-- provide a different drawable for each state--&gt;</div><div class="line">    &lt;item android:id=&quot;@+id/pressed&quot; android:drawable=&quot;@drawable/drawableP&quot;</div><div class="line">        android:state_pressed=&quot;true&quot;/&gt;</div><div class="line">    &lt;item android:id=&quot;@+id/focused&quot; android:drawable=&quot;@drawable/drawableF&quot;</div><div class="line">        android:state_focused=&quot;true&quot;/&gt;</div><div class="line">    &lt;item android:id=&quot;@id/default&quot;</div><div class="line">        android:drawable=&quot;@drawable/drawableD&quot;/&gt;</div><div class="line"></div><div class="line">    &lt;!-- specify a transition --&gt;</div><div class="line">    &lt;transition android:fromId=&quot;@+id/default&quot; android:toId=&quot;@+id/pressed&quot;&gt;</div><div class="line">        &lt;animation-list&gt;</div><div class="line">            &lt;item android:duration=&quot;15&quot; android:drawable=&quot;@drawable/dt1&quot;/&gt;</div><div class="line">            &lt;item android:duration=&quot;15&quot; android:drawable=&quot;@drawable/dt2&quot;/&gt;</div><div class="line">            ...</div><div class="line">        &lt;/animation-list&gt;</div><div class="line">    &lt;/transition&gt;</div><div class="line">    ...</div><div class="line">&lt;/animated-selector&gt;</div></pre></td></tr></table></figure>
+<h4 id="2-7-7-矢量动画"><a href="/2016/Android实现Material风格的UI/#2-7-7-矢量动画" class="headerlink" title="2.7.7 矢量动画"></a>2.7.7 矢量动画</h4><ul>
+<li><p>res/drawable/ - <vector> 定义矢量图片</vector></p>
+</li>
+<li><p>res/anim/ - <objectanimator> 定义对象变化</objectanimator></p>
+</li>
+<li><p>res/drawable/ - <animated-vector> 通过target(name,animation)关联vector和objectAnimator</animated-vector></p>
+</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!-- res/drawable/vectordrawable.xml --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">vector</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">    <span class="attr">android:height</span>=<span class="string">"64dp"</span></div><div class="line">    <span class="attr">android:width</span>=<span class="string">"64dp"</span></div><div class="line">    <span class="attr">android:viewportHeight</span>=<span class="string">"600"</span></div><div class="line">    <span class="attr">android:viewportWidth</span>=<span class="string">"600"</span>&gt;</div><div class="line">    <span class="tag">&lt;<span class="name">group</span></span></div><div class="line">        <span class="attr">android:name</span>=<span class="string">"rotationGroup"</span></div><div class="line">        <span class="attr">android:pivotX</span>=<span class="string">"300.0"</span></div><div class="line">        <span class="attr">android:pivotY</span>=<span class="string">"300.0"</span></div><div class="line">        <span class="attr">android:rotation</span>=<span class="string">"45.0"</span> &gt;</div><div class="line">        <span class="tag">&lt;<span class="name">path</span></span></div><div class="line">            <span class="attr">android:name</span>=<span class="string">"v"</span></div><div class="line">            <span class="attr">android:fillColor</span>=<span class="string">"#000000"</span></div><div class="line">            <span class="attr">android:pathData</span>=<span class="string">"M300,70 l 0,-70 70,70 0,0 -70,70z"</span> /&gt;</div><div class="line">    <span class="tag">&lt;/<span class="name">group</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">vector</span>&gt;</span></div><div class="line"><span class="comment">&lt;!-- res/anim/rotation.xml --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">objectAnimator</span></span></div><div class="line">    <span class="attr">android:duration</span>=<span class="string">"6000"</span></div><div class="line">    <span class="attr">android:propertyName</span>=<span class="string">"rotation"</span></div><div class="line">    <span class="attr">android:valueFrom</span>=<span class="string">"0"</span></div><div class="line">    <span class="attr">android:valueTo</span>=<span class="string">"360"</span> /&gt;</div><div class="line"><span class="comment">&lt;!-- res/anim/path_morph.xml --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">set</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">objectAnimator</span></span></div><div class="line">        <span class="attr">android:duration</span>=<span class="string">"3000"</span></div><div class="line">        <span class="attr">android:propertyName</span>=<span class="string">"pathData"</span></div><div class="line">        <span class="attr">android:valueFrom</span>=<span class="string">"M300,70 l 0,-70 70,70 0,0   -70,70z"</span></div><div class="line">        <span class="attr">android:valueTo</span>=<span class="string">"M300,70 l 0,-70 70,0  0,140 -70,0 z"</span></div><div class="line">        <span class="attr">android:valueType</span>=<span class="string">"pathType"</span> /&gt;</div><div class="line"><span class="tag">&lt;/<span class="name">set</span>&gt;</span></div><div class="line"><span class="comment">&lt;!-- res/drawable/animvectordrawable.xml --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">animated-vector</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">  <span class="attr">android:drawable</span>=<span class="string">"@drawable/vectordrawable"</span> &gt;</div><div class="line">    <span class="tag">&lt;<span class="name">target</span></span></div><div class="line">        <span class="attr">android:name</span>=<span class="string">"rotationGroup"</span></div><div class="line">        <span class="attr">android:animation</span>=<span class="string">"@anim/rotation"</span> /&gt;</div><div class="line">    <span class="tag">&lt;<span class="name">target</span></span></div><div class="line">        <span class="attr">android:name</span>=<span class="string">"v"</span></div><div class="line">        <span class="attr">android:animation</span>=<span class="string">"@anim/path_morph"</span> /&gt;</div><div class="line"><span class="tag">&lt;/<span class="name">animated-vector</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="2-8-兼容性"><a href="/2016/Android实现Material风格的UI/#2-8-兼容性" class="headerlink" title="2.8 兼容性"></a>2.8 兼容性</h3><p>下列功能仅在 Android 5.0（API21）及更高版本中提供：</p>
+<ul>
+<li>操作行为转换</li>
+<li>触摸反馈</li>
+<li>揭露动画</li>
+<li>基于路径的动画</li>
+<li>矢量图片</li>
+<li>图片着色</li>
+</ul>
+<p>v7r21兼容库包括以下功能：</p>
+<h4 id="2-8-1-为下列组件提供Material风格主题"><a href="/2016/Android实现Material风格的UI/#2-8-1-为下列组件提供Material风格主题" class="headerlink" title="2.8.1 为下列组件提供Material风格主题"></a>2.8.1 为下列组件提供Material风格主题</h4><blockquote>
+<ul>
+<li>EditText</li>
+<li>Spinner</li>
+<li>CheckBox</li>
+<li>RadioButton</li>
+<li>SwitchCompat</li>
+<li>CheckedTextView</li>
+</ul>
+</blockquote>
+<h4 id="2-8-2-配色"><a href="/2016/Android实现Material风格的UI/#2-8-2-配色" class="headerlink" title="2.8.2 配色"></a>2.8.2 配色</h4><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;!-- extend one of the Theme.AppCompat themes --&gt;</div><div class="line">&lt;style name="Theme.MyTheme" parent="Theme.AppCompat.Light"&gt;</div><div class="line">    &lt;!-- customize the color palette --&gt;</div><div class="line">    &lt;item name="colorPrimary"&gt;@color/material_blue_500&lt;/item&gt;</div><div class="line">    &lt;item name="colorPrimaryDark"&gt;@color/material_blue_700&lt;/item&gt;</div><div class="line">    &lt;item name="colorAccent"&gt;@color/material_green_A200&lt;/item&gt;</div><div class="line">&lt;/style&gt;</div></pre></td></tr></table></figure>
+<h4 id="2-8-3-RecyclerView和CardView"><a href="/2016/Android实现Material风格的UI/#2-8-3-RecyclerView和CardView" class="headerlink" title="2.8.3 RecyclerView和CardView"></a>2.8.3 RecyclerView和CardView</h4><figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">dependencies &#123;</div><div class="line">    compile <span class="string">'com.android.support:appcompat-v7:21.0.+'</span></div><div class="line">    compile <span class="string">'com.android.support:cardview-v7:21.0.+'</span></div><div class="line">    compile <span class="string">'com.android.support:recyclerview-v7:21.0.+'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>但早期版本会有下面的限制：</p>
+<ul>
+<li><p>CardView使用额外边距返回编程阴影实现</p>
+</li>
+<li><p>CardView不会裁剪其与圆角相交的子视图</p>
+</li>
+</ul>
+<h4 id="2-8-4-Palette"><a href="/2016/Android实现Material风格的UI/#2-8-4-Palette" class="headerlink" title="2.8.4 Palette"></a>2.8.4 Palette</h4>
+          </section>
+        </article>
+        
+
+       
+        <div class="pager">
+          
+            <a class="post-prev pager-item" href="/2016/Material-Design在中文情况下的问题/" >
+              <strong class="article-nav-caption">上一篇</strong>
+              <p class="post-nav-title">Material Design在中文情况下的问题</p>
+            </a>
+          
+          
+            <a class="post-next pager-item" href="/2016/TextView文字实际高度分析/">
+              <strong class="article-nav-caption">下一篇</strong>
+              <p class="post-nav-title">TextView文字实际高度分析</p>
+            </a>
+          
+        </div>
+        
+
+         <!-- comments -->
+        <div class="comment-section">
+  
+    
+
+    <!-- 多说评论框 start -->
+      <div class="ds-thread" data-thread-key="_posts/2016-09-01-Android实现Material风格的UI.md" data-title="Android实现Material风格的UI" data-url="http://neutra.github.io/2016/Android实现Material风格的UI/"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+      <script type="text/javascript">
+      var duoshuoQuery = {short_name:"neutra"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+
+  
+
+
+</div>
+
+    </div>
+    
+    <aside>
+        <div id="toc">
+        </div>
+    </aside>
+    
+</div>
+
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+    <p>由<a href="http://hexo.io/" target="_blank">Hexo</a>强力驱动，搭载<a href="https://github.com/wayou/hexo-theme-gstyle">gstyle</a>主题</p>
+    <p>
+        &copy; 2016 neutra
+    </p>
+</footer>
+<script src="/lib/jquery.js"></script>
+<script src="/lib/waves.js"></script>
+<script src="/lib/jquery-ui.js"></script>
+<script src="/lib/jquery.tocify.js"></script>
+<script src="/js/main.js"></script>
+
+    </body>
+</html>
